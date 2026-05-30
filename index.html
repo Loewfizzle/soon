@@ -1,0 +1,1837 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>STANDBY</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=VT323&amp;family=Share+Tech+Mono&amp;display=swap');
+
+    :root {
+      --cyan: #00f9ff;
+      --magenta: #ff00aa;
+      --terminal-bg: #111117;
+      --terminal-inner: #0f0f14;
+      --deep-black: #0a0a0f;
+    }
+
+    /* === BASE IMMERSIVE SETUP === */
+    body {
+      background: #0a0a0f;
+      font-family: 'Share Tech Mono', 'VT323', ui-monospace, monospace;
+      overflow: hidden;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .holographic-terminal {
+      /* Subtle 3D perspective tilt — expensive holographic feel */
+      transform: perspective(920px) rotateX(2.1deg);
+      transform-origin: center;
+      will-change: transform;
+    }
+
+    /* === MULTI-LAYERED NEON BORDERS + HEAVY GLOW === */
+    .neon-frame-outer {
+      padding: 5px;
+      border-radius: 18px;
+      background: linear-gradient(145deg, #00f9ff15, transparent 40%, #ff00aa12 70%, transparent);
+      box-shadow: 
+        0 0 14px #00f9ff55,
+        0 0 32px #00f9ff35,
+        0 0 58px #00f9ff1a,
+        0 25px 65px -15px rgba(0, 0, 0, 0.9);
+    }
+
+    .neon-frame-mid {
+      padding: 3px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #ff00aa22, transparent 50%, #00f9ff18);
+      box-shadow: 
+        0 0 11px #ff00aa45,
+        0 0 27px #ff00aa25,
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    }
+
+    .terminal-face {
+      background: #111117;
+      border-radius: 10px;
+      border: 1px solid #00f9ff22;
+      box-shadow: 
+        inset 0 0 0 1px #0f0f14,
+        inset 0 2px 0 rgba(255,255,255,0.025),
+        inset 0 -3px 8px rgba(0,0,0,0.6),
+        0 0 9px #00f9ff15;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* === CRT SCANLINE OVERLAY (slow vertical drift + flicker) === */
+    .crt-scanlines {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 20;
+      background: linear-gradient(
+        to bottom,
+        transparent 0%,
+        transparent 46%,
+        #00f9ff 47%,
+        #00f9ff 48.6%,
+        transparent 49.5%,
+        transparent 100%
+      );
+      background-size: 100% 6.5px;
+      opacity: 0.075;
+      animation: crt-drift 7.8s linear infinite;
+      mix-blend-mode: screen;
+    }
+
+    .crt-flicker {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 21;
+      background: rgba(0, 249, 255, 0.02);
+      animation: crt-flicker-anim 2.8s steps(1, end) infinite;
+      mix-blend-mode: screen;
+    }
+
+    @keyframes crt-drift {
+      0% { background-position: 0 0; }
+      100% { background-position: 0 280px; }
+    }
+
+    @keyframes crt-flicker-anim {
+      0%, 100% { opacity: 0.018; }
+      3% { opacity: 0.11; }
+      4% { opacity: 0.018; }
+      11% { opacity: 0.07; }
+      12% { opacity: 0.018; }
+      47% { opacity: 0.018; }
+      49% { opacity: 0.13; }
+      50% { opacity: 0.018; }
+      71% { opacity: 0.04; }
+      72% { opacity: 0.018; }
+      88% { opacity: 0.09; }
+      89% { opacity: 0.018; }
+    }
+
+    /* === VIGNETTE + PHOSPHOR FEEL === */
+    .global-vignette {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 30;
+      background: radial-gradient(
+        circle at 50% 48%,
+        transparent 48%,
+        rgba(10, 10, 15, 0.68) 78%,
+        rgba(10, 10, 15, 0.88) 94%
+      );
+    }
+
+    /* === ALIEN HEAD LOGO — BREATHE + GLITCH === */
+    .alien-head {
+      display: inline-block;
+      vertical-align: middle;
+      margin: -3px 1px 0 1px;
+      animation: 
+        logo-breathe 3.85s ease-in-out infinite,
+        logo-glitch 8.6s linear infinite;
+      filter: 
+        drop-shadow(0 0 1.5px #00f9ff)
+        drop-shadow(0 0 4.5px #ff00aa)
+        drop-shadow(0 0 9px #00f9ff33);
+      transition: filter 0.2s ease;
+
+      /* Responsive scaling — matches the parent text size perfectly on all viewports */
+      height: 0.94em;
+      width: auto;
+    }
+
+    /* Standalone alien icon sizing (much larger than the old wordmark usage) */
+    .alien-icon .alien-head {
+      height: 100px;
+      width: auto;
+      margin: 0;
+    }
+
+    /* Mobile scaling for the standalone alien icon */
+    @media (max-width: 640px) {
+      .alien-icon .alien-head {
+        height: 78px;
+      }
+    }
+
+    @media (max-width: 380px) {
+      .alien-icon .alien-head {
+        height: 66px;
+      }
+    }
+
+    @keyframes logo-breathe {
+      0%, 100% {
+        transform: scale(1);
+        filter: 
+          drop-shadow(0 0 1.5px #00f9ff)
+          drop-shadow(0 0 4.5px #ff00aa)
+          drop-shadow(0 0 9px #00f9ff33);
+      }
+      48% {
+        transform: scale(1.034);
+        filter: 
+          drop-shadow(0 0 2.5px #00f9ff)
+          drop-shadow(0 0 9px #ff00aa)
+          drop-shadow(0 0 18px #00f9ff55);
+      }
+    }
+
+    @keyframes logo-glitch {
+      0%, 100%, 91.5%, 96.5% { transform: translate(0, 0) skew(0deg); }
+      92% { transform: translate(-0.6px, 0.4px) skew(0.6deg); }
+      92.6% { transform: translate(0.9px, -0.35px) skew(-0.4deg); }
+      93.1% { transform: translate(-0.3px, 0.6px) skew(0.3deg); }
+      94.8% { transform: translate(0.7px, -0.2px) skew(-0.5deg); }
+      95.5% { transform: translate(0, 0) skew(0deg); }
+    }
+
+    /* Subtle circuit vein pulse inside SVG via CSS (targets specific elements) */
+    .alien-head .circuit {
+      animation: circuit-pulse 4.2s ease-in-out infinite;
+    }
+
+    @keyframes circuit-pulse {
+      0%, 100% { opacity: 0.28; }
+      50% { opacity: 0.52; }
+    }
+
+    /* === GLITCH-READY STANDBY TITLE === */
+    .glitch-title {
+      font-family: 'VT323', 'Share Tech Mono', ui-monospace, monospace;
+      font-weight: 900;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      position: relative;
+      line-height: 0.86;
+      color: #f0f8ff;
+      text-shadow:
+        0 0 6px #00f9ff88,
+        0 0 16px #00f9ff44,
+        0 0 32px #00f9ff22;
+    }
+
+    .glitch-title::before,
+    .glitch-title::after {
+      content: "STANDBY";
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+
+    .glitch-title::before {
+      color: #ff00aa;
+      text-shadow: 0 0 4px #ff00aa, 0 0 12px #ff00aa66;
+      animation: glitch-cyan 1.75s infinite linear alternate;
+      clip-path: polygon(0 0, 100% 0, 100% 32%, 0 35%);
+      transform: translate(-1.2px, 0);
+    }
+
+    .glitch-title::after {
+      color: #00f9ff;
+      text-shadow: 0 0 5px #00f9ff, 0 0 15px #00f9ff66;
+      animation: glitch-magenta 2.05s infinite linear alternate;
+      clip-path: polygon(0 68%, 100% 65%, 100% 100%, 0 100%);
+      transform: translate(1.4px, 0);
+    }
+
+    @keyframes glitch-cyan {
+      0%, 100% { transform: translate(-1.2px, 0); }
+      8% { transform: translate(-2.1px, 0.3px); }
+      12% { transform: translate(-0.6px, -0.2px); }
+      18% { transform: translate(-1.2px, 0); }
+    }
+
+    @keyframes glitch-magenta {
+      0%, 100% { transform: translate(1.4px, 0); }
+      9% { transform: translate(2.3px, -0.4px); }
+      14% { transform: translate(0.7px, 0.5px); }
+      21% { transform: translate(1.4px, 0); }
+    }
+
+    /* === STATUS BAR — SEGMENTED NEON === */
+    .status-bar {
+      height: 11px;
+      background: #0a0a0f;
+      border: 1px solid #00f9ff33;
+      border-radius: 9999px;
+      overflow: hidden;
+      box-shadow: 
+        inset 0 1px 0 rgba(0,0,0,0.6),
+        0 0 8px #00f9ff22;
+    }
+
+    .status-segment {
+      height: 100%;
+      border-right: 1px solid rgba(0, 0, 0, 0.45);
+      transition: all 0.2s ease;
+    }
+
+    .status-segment.filled-cyan {
+      background: linear-gradient(90deg, #00f9ff, #00f9ffcc);
+      box-shadow: 0 0 6px #00f9ff, inset 0 0 4px rgba(255,255,255,0.35);
+    }
+
+    .status-segment.filled-magenta {
+      background: linear-gradient(90deg, #ff00aa, #ff00aacc);
+      box-shadow: 0 0 7px #ff00aa, inset 0 0 3px rgba(255,255,255,0.3);
+    }
+
+    /* === FLASHING DOTS === */
+    .standby-dots .dot {
+      display: inline-block;
+      width: 4px;
+      height: 4px;
+      background: #00f9ff;
+      border-radius: 50%;
+      box-shadow: 0 0 4px #00f9ff, 0 0 9px #00f9ff55;
+      animation: flash-dot 1.15s ease-in-out infinite;
+      opacity: 0.35;
+    }
+
+    .standby-dots .dot:nth-child(2) { animation-delay: 180ms; }
+    .standby-dots .dot:nth-child(3) { animation-delay: 360ms; }
+
+    @keyframes flash-dot {
+      0%, 100% { opacity: 0.28; transform: scale(0.6); }
+      45% { opacity: 1; transform: scale(1); }
+    }
+
+    /* === GLOWING CTA BUTTON === */
+    .initiate-uplink {
+      font-family: 'Share Tech Mono', ui-monospace, monospace;
+      font-weight: 700;
+      letter-spacing: 4.5px;
+      background: transparent;
+      color: #00f9ff;
+      border: 2px solid #00f9ff;
+      border-radius: 2px;
+      padding: 14px 58px;
+      font-size: 15px;
+      position: relative;
+      overflow: hidden;
+      box-shadow:
+        0 0 8px #00f9ff,
+        0 0 18px #00f9ff55,
+        0 0 32px #00f9ff22,
+        inset 0 1px 0 rgba(255,255,255,0.15),
+        inset 0 -2px 4px rgba(0,0,0,0.4);
+      transition: all 0.15s ease;
+    }
+
+    .initiate-uplink::before {
+      content: '';
+      position: absolute;
+      inset: -1px;
+      background: linear-gradient(
+        90deg,
+        transparent,
+        #00f9ff22 45%,
+        #ff00aa18 55%,
+        transparent
+      );
+      opacity: 0.5;
+      animation: btn-shimmer 3.6s linear infinite;
+    }
+
+    .initiate-uplink::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      box-shadow: 
+        0 0 14px #00f9ff,
+        0 0 26px #ff00aa33;
+      border-radius: 2px;
+      opacity: 0.6;
+      animation: btn-glow-pulse 2.4s ease-in-out infinite;
+    }
+
+    @keyframes btn-shimmer {
+      0% { transform: translateX(-120%); }
+      100% { transform: translateX(240%); }
+    }
+
+    @keyframes btn-glow-pulse {
+      0%, 100% { opacity: 0.55; }
+      50% { opacity: 0.95; }
+    }
+
+    .initiate-uplink:hover {
+      color: #ffffff;
+      border-color: #00f9ff;
+      box-shadow:
+        0 0 12px #00f9ff,
+        0 0 28px #00f9ff88,
+        0 0 48px #ff00aa44;
+    }
+
+    /* === LOG CONTAINER === */
+    .log-container {
+      background: #0c0c12;
+      border: 1px solid #00f9ff1a;
+      font-family: 'Share Tech Mono', ui-monospace, monospace;
+      line-height: 1.25;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.6);
+    }
+
+    /* === IMMERSIVE RANDOM LOG LINES (added layer) === */
+    .log-line {
+      font-family: 'Share Tech Mono', ui-monospace, monospace;
+      font-size: 8.75px;
+      line-height: 1.18;
+      letter-spacing: 0.2px;
+      margin: 0;
+      padding: 0.5px 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      user-select: text;
+      cursor: default;
+      transition: opacity 180ms cubic-bezier(0.22, 1, 0.3, 1);
+    }
+    .log-system {
+      color: #5fd7ff;
+      opacity: 0.56;
+    }
+    .log-system-magenta {
+      color: #ff77cc;
+      opacity: 0.49;
+    }
+    .log-command {
+      color: #ffcc77;
+      opacity: 0.81;
+      font-weight: 500;
+      letter-spacing: 0.4px;
+    }
+    .log-response {
+      color: #77ffaa;
+      opacity: 0.67;
+      padding-left: 2px;
+    }
+    .log-line.log-fade-out {
+      opacity: 0 !important;
+      transition: opacity 230ms ease !important;
+    }
+
+    @media (max-width: 767px) {
+      .log-line { font-size: 9.6px; letter-spacing: 0.1px; }
+    }
+
+    /* === OS BAR + FOOTER === */
+    .os-bar {
+      font-size: 9.5px;
+      letter-spacing: 2.15px;
+      background: #0f0f14;
+      border-bottom: 1px solid #00f9ff1f;
+      font-weight: 400;
+    }
+
+    .terminal-footer {
+      font-size: 8.5px;
+      letter-spacing: 1.85px;
+      color: #00f9ff33;
+      border-top: 1px solid #00f9ff1a;
+    }
+
+    @media (max-width: 640px) {
+      .os-bar {
+        font-size: 8.8px;
+        padding-left: 14px;
+        padding-right: 14px;
+      }
+      .terminal-footer {
+        font-size: 7.8px;
+      }
+    }
+
+    /* === TYPOGRAPHY & TEXT GLOWS === */
+    .neon-text {
+      text-shadow:
+        0 0 3px #00f9ff66,
+        0 0 9px #00f9ff22;
+    }
+
+    .pale-cyan {
+      color: #c5e9f5;
+    }
+
+    /* === SUBTLE PHOSPHOR TEXTURE === */
+    .terminal-face::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: 
+        radial-gradient(circle at 1px 1px, rgba(0, 249, 255, 0.018) 0.8px, transparent 0);
+      background-size: 3px 3px;
+      pointer-events: none;
+      z-index: 15;
+      mix-blend-mode: screen;
+      opacity: 0.6;
+    }
+
+    /* Fine-tune for perfect centering and impact */
+    .terminal-face {
+      min-height: 528px;
+    }
+
+    /* ========================================
+       ADDITIONAL PREMIUM ANIMATION STYLES
+       (Matrix Rain, Status Loop, Glitch Bursts, Breach FX)
+       ======================================== */
+
+    /* MATRIX RAIN CANVAS */
+    .matrix-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 1;
+      pointer-events: none;
+      mix-blend-mode: screen;
+    }
+
+    /* CYCLING STATUS MESSAGES (synced to bar) */
+    .status-message {
+      font-family: 'Share Tech Mono', ui-monospace, monospace;
+      font-size: 10.25px;
+      letter-spacing: 3.15px;
+      color: #7edcff;
+      text-align: center;
+      margin-bottom: 3px;
+      height: 13px;
+      opacity: 1;
+      transition: opacity 165ms cubic-bezier(0.22, 1, 0.3, 1);
+      text-shadow: 0 0 4px #00f9ff33;
+      user-select: none;
+      pointer-events: none;
+    }
+
+    /* ENHANCED SEGMENTED BAR (JS-driven fills + trail) */
+    .status-segment {
+      transition: background 55ms linear, box-shadow 85ms linear;
+      will-change: background, box-shadow;
+    }
+    .status-segment.leading {
+      position: relative;
+    }
+    .status-segment.leading::after {
+      content: '';
+      position: absolute;
+      top: -1px;
+      bottom: -1px;
+      right: -1px;
+      width: 2.5px;
+      background: #ffffff;
+      box-shadow: 0 0 6px #fff, 0 0 13px #00f9ff, 0 0 22px #00f9ff88;
+      opacity: 0.92;
+      z-index: 2;
+    }
+
+    /* TITLE GLITCH BURSTS (intense 200ms danger bursts) */
+    .glitch-title.title-burst {
+      animation: title-burst-glitch 205ms linear forwards;
+      text-shadow:
+        0 0 5px #00f9ff,
+        0 0 14px #00f9ff,
+        0 0 28px #00f9ff99,
+        0 0 2px #ffffff,
+        0 0 46px #ff00aa33;
+      filter: brightness(1.82) contrast(1.09);
+    }
+    .glitch-title.title-burst::before,
+    .glitch-title.title-burst::after {
+      animation-duration: 0.085s !important;
+      animation-timing-function: steps(1, end) !important;
+    }
+
+    @keyframes title-burst-glitch {
+      0%   { transform: translate(0,0) skew(0deg); }
+      11%  { transform: translate(-4.8px, 1.2px) skew(2.1deg); }
+      23%  { transform: translate(4.1px, -1.9px) skew(-2.4deg); }
+      36%  { transform: translate(-3.2px, 1.4px) skew(1.6deg); }
+      51%  { transform: translate(2.6px, -0.8px) skew(-1.1deg); }
+      67%  { transform: translate(-1.4px, 0.5px) skew(0.6deg); }
+      82%  { transform: translate(0.7px, -0.2px) skew(-0.3deg); }
+      100% { transform: translate(0,0) skew(0deg); }
+    }
+
+    /* BREACH / CTA DRAMATIC EFFECTS */
+    .terminal-face.breach-active {
+      box-shadow:
+        inset 0 0 0 1px #0f0f14,
+        inset 0 2px 0 rgba(255,255,255,0.025),
+        inset 0 -3px 8px rgba(0,0,0,0.6),
+        0 0 9px #00f9ff15,
+        0 0 42px #00f9ffcc,
+        0 0 78px #ff00aa66 !important;
+      transition: box-shadow 70ms ease;
+    }
+
+    .holographic-terminal.breach-stutter {
+      animation: breach-stutter-anim 2.8s steps(1, end);
+    }
+
+    @keyframes breach-stutter-anim {
+      0%, 100% { transform: perspective(920px) rotateX(2.1deg) translate(0,0); }
+      4%  { transform: perspective(920px) rotateX(2.1deg) translate(-1.8px, 0.6px); }
+      8%  { transform: perspective(920px) rotateX(2.1deg) translate(1.6px, -0.9px); }
+      13% { transform: perspective(920px) rotateX(2.1deg) translate(-0.9px, 0.4px); }
+      19% { transform: perspective(920px) rotateX(2.1deg) translate(1.3px, -0.5px); }
+      26% { transform: perspective(920px) rotateX(2.1deg) translate(0,0); }
+      38% { transform: perspective(920px) rotateX(2.1deg) translate(-1.1px, 0.3px); }
+      44% { transform: perspective(920px) rotateX(2.1deg) translate(0.8px, -0.6px); }
+      51% { transform: perspective(920px) rotateX(2.1deg) translate(-0.5px, 0.2px); }
+      61% { transform: perspective(920px) rotateX(2.1deg) translate(0.6px, -0.3px); }
+    }
+
+    .alien-head.breach-glitch {
+      animation:
+        logo-breathe 3.85s ease-in-out infinite,
+        logo-breach-glitch 0.72s linear infinite !important;
+      filter:
+        drop-shadow(0 0 2.5px #00f9ff)
+        drop-shadow(0 0 12px #ff00aa)
+        drop-shadow(0 0 32px #00f9ff77) !important;
+      transition: filter 60ms ease;
+    }
+
+    @keyframes logo-breach-glitch {
+      0%, 100%, 82%, 89% { transform: translate(0, 0) skew(0deg) scale(1); }
+      84%   { transform: translate(-2.4px, 1.1px) skew(2.8deg) scale(1.012); }
+      85.5% { transform: translate(2.9px, -1.6px) skew(-3.1deg) scale(0.988); }
+      87%   { transform: translate(-1.8px, 0.9px) skew(2.1deg) scale(1.007); }
+      88.2% { transform: translate(1.5px, -0.7px) skew(-1.4deg) scale(1); }
+    }
+
+    /* FULL-SCREEN TRANSMISSION OVERLAY (heavy neon glitch explosion) */
+    .transmission-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(
+        circle at 50% 46%,
+        rgba(12, 12, 18, 0.32) 22%,
+        rgba(6, 6, 10, 0.96) 68%
+      );
+      backdrop-filter: blur(0.6px);
+      pointer-events: none;
+    }
+
+    .transmission-content {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      /* Minimal padding so the text block itself can be perfectly centered */
+      padding: 10px 20px;
+    }
+
+    .transmission-content::before {
+      content: '';
+      position: absolute;
+      inset: -40px;
+      background: radial-gradient(
+        circle at 50% 50%,
+        rgba(6, 6, 10, 0.82) 0%,
+        transparent 72%
+      );
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    .transmission-text {
+      font-family: 'VT323', 'Share Tech Mono', monospace;
+      font-size: clamp(2.35rem, 9.5vw, 3.65rem);
+      letter-spacing: 8.5px;
+      font-weight: 900;
+      color: #ff00aa;
+      text-transform: uppercase;
+      position: relative;
+      line-height: 1;
+      display: inline-block;
+      /* Let the flex parent handle true centering */
+      text-align: center;
+      text-shadow:
+        0 0 14px #ff00aa,
+        0 0 32px #ff00aacc,
+        0 0 68px #ff008877,
+        0 0 110px #ff66cc44;
+    }
+
+    .tx-glitch-layer {
+      position: absolute;
+      left: 50%;
+      top: 0;
+      /* This is the key for true centering of glitch layers */
+      transform: translateX(-50%);
+      white-space: nowrap;
+      pointer-events: none;
+    }
+
+    .tx-base { color: #ff00aa; z-index: 3; }
+    .tx-cyan { color: #ff66cc; z-index: 2; mix-blend-mode: screen; }
+    .tx-magenta { color: #cc0088; z-index: 1; mix-blend-mode: screen; }
+
+    .transmission-sub {
+      margin-top: 8px;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 11.8px;
+      letter-spacing: 5.1px;
+      color: #ff00aa;
+      opacity: 0.88;
+      text-shadow: 0 0 7px #ff00aa66;
+    }
+
+    @keyframes tx-heavy-glitch {
+      0%, 100% { transform: translateX(-50%) translate(0,0); }
+      6%  { transform: translateX(-50%) translate(-2.8px, 0.8px); }
+      13% { transform: translateX(-50%) translate(2.8px, -0.8px); }
+      19% { transform: translateX(-50%) translate(-2.2px, 1.1px); }
+      27% { transform: translateX(-50%) translate(2.4px, -1.0px); }
+      34% { transform: translateX(-50%) translate(-1.8px, 0.9px); }
+      42% { transform: translateX(-50%) translate(2.0px, -0.7px); }
+      51% { transform: translateX(-50%) translate(-1.2px, 0.5px); }
+    }
+
+    .transmission-text .tx-glitch-layer {
+      animation: tx-heavy-glitch 0.135s linear infinite;
+    }
+    .transmission-text .tx-cyan { animation-delay: 0.028s; }
+    .transmission-text .tx-magenta { animation-delay: 0.065s; }
+
+    /* CTA hover/active polish (expensive feel) */
+    .initiate-uplink:hover {
+      transform: scale(1.018);
+      box-shadow:
+        0 0 14px #00f9ff,
+        0 0 34px #00f9ff99,
+        0 0 58px #ff00aa55;
+    }
+    .initiate-uplink:active {
+      transform: scale(0.976);
+      transition-duration: 38ms;
+    }
+
+    /* ========================================
+       ACCESSIBILITY + MOBILE POLISH (from QA)
+       ======================================== */
+
+    /* Respect reduced motion — pause all infinite loops and heavy effects */
+    @media (prefers-reduced-motion: reduce) {
+      .alien-head,
+      .crt-scanlines,
+      .crt-flicker,
+      .glitch-title::before,
+      .glitch-title::after,
+      .initiate-uplink::before,
+      .initiate-uplink::after,
+      .standby-dots .dot,
+      .status-segment {
+        animation: none !important;
+        transition: none !important;
+      }
+      .matrix-canvas {
+        display: none !important; /* hide matrix entirely for motion-sensitive users */
+      }
+      .holographic-terminal {
+        transform: none !important;
+      }
+    }
+
+    /* Modern mobile viewport + safe area handling */
+    @supports (padding: env(safe-area-inset-bottom)) {
+      body {
+        padding-left: env(safe-area-inset-left);
+        padding-right: env(safe-area-inset-right);
+        padding-bottom: env(safe-area-inset-bottom);
+      }
+    }
+
+    /* Slightly tighter terminal on very small screens while keeping impact */
+    @media (max-width: 380px) {
+      .terminal-face { min-height: 492px; }
+      .glitch-title { letter-spacing: 0.22em; }
+      .initiate-uplink {
+        padding: 14px 48px;
+        font-size: 14px;
+        letter-spacing: 3.8px;
+      }
+    }
+
+    /* Stronger mobile optimizations */
+    @media (max-width: 640px) {
+      /* Reduce expensive 3D tilt on phones/tablets for better performance + readability */
+      .holographic-terminal {
+        transform: perspective(920px) rotateX(0.8deg) !important;
+      }
+
+      /* Bigger, more tappable button */
+      .initiate-uplink {
+        padding: 16px 52px;
+        font-size: 14.5px;
+        letter-spacing: 4px;
+      }
+
+      /* Give the title a bit more breathing room */
+      .glitch-title {
+        font-size: clamp(3.1rem, 13vw, 4.1rem);
+      }
+
+      /* Make ACCESS DENIED overlay text even more dominant on small screens */
+      .transmission-text {
+        font-size: clamp(2.1rem, 11vw, 3.1rem);
+        letter-spacing: 6px;
+      }
+    }
+
+    @media (max-width: 380px) {
+      .holographic-terminal {
+        transform: none !important;
+      }
+    }
+
+    /* Defensive visibility rules in case of CSS parse issues from previous edits */
+    .holographic-terminal,
+    .neon-frame-outer,
+    .neon-frame-mid,
+    .terminal-face {
+      display: block !important;
+      opacity: 1 !important;
+      visibility: visible !important;
+      min-height: 300px !important;
+    }
+
+    .glitch-title,
+    .text-\[\#00f9ff\] {
+      color: #e0f4ff !important;
+    }
+  </style>
+</head>
+<body>
+  <!-- FULL-SCREEN IMMERSIVE CONTAINER -->
+  <div class="min-h-screen w-full flex items-center justify-center p-5 relative">
+    
+    <!-- GLOBAL VIGNETTE + PHOSPHOR OVERLAY -->
+    <div class="global-vignette"></div>
+
+    <!-- CENTERED HOLOGRAPHIC TERMINAL WINDOW -->
+    <div class="holographic-terminal w-full max-w-[810px] relative z-10">
+
+      <!-- MULTI-LAYERED NEON BORDER FRAME -->
+      <div class="neon-frame-outer">
+        <div class="neon-frame-mid">
+          
+          <!-- TERMINAL FACE — DEEP BLACK WITH CRT EFFECTS -->
+          <div class="terminal-face bg-[#111117] text-[#e0f4ff]">
+
+            <!-- CRT SCANLINE + FLICKER OVERLAYS (inside terminal) -->
+            <div class="crt-scanlines"></div>
+            <div class="crt-flicker"></div>
+
+            <!-- === TOP FAKE OS BAR === -->
+            <div class="os-bar px-6 py-[7px] flex items-center text-[#00f9ff]/75">
+              <div class="flex-1">NEURAL OS v2077 • SECURE LINK ESTABLISHED</div>
+            </div>
+
+            <!-- Mysterious standalone alien head icon (no branding text) -->
+            <div class="flex justify-center pt-2 pb-1 alien-icon">
+              <svg 
+                xmlns="http://www.w3.org/2000/svg" 
+                width="100" 
+                height="128" 
+                viewBox="0 0 48 62" 
+                class="alien-head"
+                aria-hidden="true"
+              >
+                <defs>
+                  <!-- Chrome metallic gradient -->
+                  <linearGradient id="chromeGrad" x1="24" y1="6" x2="24" y2="59" gradientUnits="userSpaceOnUse">
+                    <stop offset="0%" stop-color="#5c5c6b"/>
+                    <stop offset="28%" stop-color="#34343e"/>
+                    <stop offset="52%" stop-color="#3f3f4b"/>
+                    <stop offset="82%" stop-color="#272731"/>
+                    <stop offset="100%" stop-color="#1e1e26"/>
+                  </linearGradient>
+                  <!-- Subtle top reflection gradient -->
+                  <linearGradient id="chromeHighlight" x1="24" y1="6" x2="24" y2="26" gradientUnits="userSpaceOnUse">
+                    <stop offset="0%" stop-color="#787885" stop-opacity="0.75"/>
+                    <stop offset="100%" stop-color="#787885" stop-opacity="0.0"/>
+                  </linearGradient>
+                </defs>
+
+                <!-- OUTER CYAN NEON HEAVY OUTLINE -->
+                <path 
+                  d="M24 4 Q 7.5 10 6.5 27 Q 5.5 46 13 54 Q 20 60 24 60 Q 28 60 35 54 Q 42.5 46 41.5 27 Q 40.5 10 24 4 Z" 
+                  stroke="#00f9ff" 
+                  stroke-width="5.2" 
+                  stroke-opacity="0.42"
+                  stroke-linejoin="round"
+                />
+
+                <!-- MAGENTA NEON ACCENT OUTLINE -->
+                <path 
+                  d="M24 4 Q 7.5 10 6.5 27 Q 5.5 46 13 54 Q 20 60 24 60 Q 28 60 35 54 Q 42.5 46 41.5 27 Q 40.5 10 24 4 Z" 
+                  stroke="#ff00aa" 
+                  stroke-width="2.6" 
+                  stroke-opacity="0.58"
+                  stroke-linejoin="round"
+                />
+
+                <!-- MAIN CHROME HEAD FILL -->
+                <path 
+                  d="M24 4 Q 7.5 10 6.5 27 Q 5.5 46 13 54 Q 20 60 24 60 Q 28 60 35 54 Q 42.5 46 41.5 27 Q 40.5 10 24 4 Z" 
+                  fill="url(#chromeGrad)" 
+                  stroke="#0f0f14" 
+                  stroke-width="1.35"
+                  stroke-linejoin="round"
+                />
+
+                <!-- CHROME HIGHLIGHT / METALLIC SHEEN -->
+                <path 
+                  d="M24 6 Q 10.5 12 9.5 25 Q 9 35 14 42" 
+                  fill="none" 
+                  stroke="url(#chromeHighlight)" 
+                  stroke-width="2.8" 
+                  stroke-opacity="0.65"
+                  stroke-linecap="round"
+                />
+
+                <!-- SUBTLE CIRCUIT VEIN LINES -->
+                <path d="M21 17 Q 18.5 25 23 32" stroke="#00f9ff" stroke-width="0.75" opacity="0.32" class="circuit"/>
+                <path d="M27 17 Q 29.5 25 24.5 32" stroke="#00f9ff" stroke-width="0.75" opacity="0.32" class="circuit"/>
+                <path d="M17 37 Q 14.5 44 19 51" stroke="#00f9ff" stroke-width="0.6" opacity="0.26" class="circuit"/>
+                <path d="M31 37 Q 33.5 44 28.5 51" stroke="#00f9ff" stroke-width="0.6" opacity="0.26" class="circuit"/>
+                <path d="M23.5 12 Q 16 18 15 24" stroke="#ff00aa" stroke-width="0.55" opacity="0.23"/>
+
+                <!-- LARGE BLACK OVAL EYES -->
+                <ellipse cx="17" cy="31" rx="6.1" ry="8.6" fill="#0a0a0f"/>
+                <ellipse cx="31" cy="31" rx="6.1" ry="8.6" fill="#0a0a0f"/>
+
+                <!-- EYE NEON RIMS -->
+                <ellipse cx="17" cy="31" rx="6.1" ry="8.6" fill="none" stroke="#00f9ff" stroke-width="1.05" opacity="0.55"/>
+                <ellipse cx="31" cy="31" rx="6.1" ry="8.6" fill="none" stroke="#00f9ff" stroke-width="1.05" opacity="0.55"/>
+
+                <!-- GLOWING CYAN VERTICAL SLIT PUPILS -->
+                <ellipse cx="17" cy="31" rx="1.05" ry="4.85" fill="#00f9ff"/>
+                <ellipse cx="31" cy="31" rx="1.05" ry="4.85" fill="#00f9ff"/>
+
+                <!-- PUPIL CORE BRIGHTNESS -->
+                <ellipse cx="17" cy="31" rx="0.58" ry="2.65" fill="#c0faff" opacity="0.75"/>
+                <ellipse cx="31" cy="31" rx="0.58" ry="2.65" fill="#c0faff" opacity="0.75"/>
+
+                <!-- LEFT ANTENNA (MAGENTA GLOW) -->
+                <path 
+                  d="M19.5 11.5 Q 13 4.5 9 1.2" 
+                  stroke="#ff00aa" 
+                  stroke-width="1.95" 
+                  stroke-linecap="round"
+                  stroke-opacity="0.92"
+                />
+                <!-- Right antenna -->
+                <path 
+                  d="M28.5 11.5 Q 35 4.5 39 1.2" 
+                  stroke="#ff00aa" 
+                  stroke-width="1.95" 
+                  stroke-linecap="round"
+                  stroke-opacity="0.92"
+                />
+
+                <!-- ANTENNA TIP PULSING DOTS -->
+                <circle cx="9" cy="1.2" r="2.55" fill="#ff00aa"/>
+                <circle cx="39" cy="1.2" r="2.55" fill="#ff00aa"/>
+
+                <!-- Inner bright core of antenna tips -->
+                <circle cx="9" cy="1.2" r="1.15" fill="#ffccdd" opacity="0.85"/>
+                <circle cx="39" cy="1.2" r="1.15" fill="#ffccdd" opacity="0.85"/>
+              </svg>
+            </div>
+
+            <!-- === MAIN CONTENT AREA === -->
+            <div class="px-6 sm:px-9 pb-6 pt-2 sm:pt-3 text-center">
+
+              <!-- GIANT GLITCH-READY "STANDBY" TITLE -->
+              <div class="glitch-title text-[4.35rem] sm:text-[4.85rem] lg:text-[5.35rem] mt-2 mb-2 tracking-[0.275em] select-none">
+                STANDBY
+              </div>
+
+              <!-- SUBTITLE -->
+              <div class="text-[#00f9ff] text-[13.5px] tracking-[4.4px] mb-6 font-medium neon-text">
+                THE MATRIX IS INITIALIZING...
+              </div>
+
+              <!-- ANIMATED STATUS BAR CONTAINER (segmented neon style) -->
+              <div class="max-w-[315px] mx-auto mb-6">
+                <div class="status-bar">
+                  <div class="flex h-full w-full">
+                    <!-- Segmented neon gradient fills -->
+                    <div class="status-segment flex-1 filled-cyan"></div>
+                    <div class="status-segment flex-1 filled-cyan" style="opacity:0.85"></div>
+                    <div class="status-segment flex-1 filled-magenta"></div>
+                    <div class="status-segment flex-1" style="background: linear-gradient(90deg, #00f9ff55, #ff00aa44);"></div>
+                    <div class="status-segment flex-1" style="background: #0a0a0f;"></div>
+                    <div class="status-segment flex-1" style="background: #0a0a0f;"></div>
+                    <div class="status-segment flex-1" style="background: #0a0a0f;"></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- THREE FLASHING DOTS + STANDBY FOR UPLINK TEXT -->
+              <div class="standby-dots flex items-center justify-center gap-x-1.5 mb-6 text-[#00f9ff]/70 text-xs tracking-[3.8px]">
+                <span class="dot"></span>
+                <span class="dot"></span>
+                <span class="dot"></span>
+                <span class="ml-1.5">...STANDBY FOR UPLINK...</span>
+              </div>
+
+              <!-- TEASER TEXT -->
+              <div class="text-[#9fbccc] text-[12.8px] tracking-[0.8px] max-w-[300px] mx-auto leading-tight">
+                Something massive is awakening in the shadows.
+              </div>
+
+              <!-- LARGE GLOWING CTA BUTTON -->
+              <div class="pt-7">
+                <button class="initiate-uplink">
+                  INITIATE UPLINK
+                </button>
+              </div>
+
+            </div>
+
+            <!-- === BOTTOM EMPTY LOG CONTAINER === -->
+            <div class="mx-6 mb-3">
+              <div id="log" class="log-container px-4 py-2.5 text-[9.5px] h-[74px] overflow-hidden rounded">
+                <!-- Empty — ready for JS-injected log lines (max 5 lines) -->
+              </div>
+            </div>
+
+            <!-- === FOOTER INSIDE TERMINAL === -->
+            <div class="terminal-footer px-6 py-[8.5px] text-center">
+              NEURAL CORE • 2077 • ALL RIGHTS NEURALLY RESERVED
+            </div>
+
+          </div> <!-- /terminal-face -->
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ============================================================
+       PRODUCTION-READY ANIMATION & EFFECTS SYSTEM
+       Self-contained. Initializes on DOMContentLoaded.
+       Implements: Matrix Rain (Canvas), Looping Status Bar (3.8s),
+       Synced Cycling Messages, Title Glitch Bursts, Dramatic CTA Breach.
+       Premium, smooth, performant, mobile-aware.
+       ============================================================ -->
+  <script>
+    (function() {
+      'use strict';
+
+      // ============================================================
+      // CONFIGURATION CONSTANTS
+      // ============================================================
+      const BAR_CYCLE_MS = 3800;              // Exact 3.8 second perfect loop
+      const NUM_SEGMENTS = 20;                // 18-22 as specified (premium segmented look)
+      const MESSAGE_INTERVAL_MS = 3800 / 6;   // Exactly 6 messages per perfect 3.8s bar cycle
+      const TITLE_BURST_MIN = 5500;
+      const TITLE_BURST_MAX = 9000;
+      const BREACH_DURATION_MS = 2800;
+
+      const MESSAGES = [
+        "INITIALIZING QUANTUM CORE...",
+        "DECRYPTING ARCHIVES...",
+        "NEURAL WEAVE STABILIZING...",
+        "CALIBRATING UPLINK PROTOCOLS...",
+        "AWAITING TRANSMISSION...",
+        "SYNCHRONIZING SHADOW NODES..."
+      ];
+
+      const MATRIX_CHARS = 'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン0123456789▀▄█▌▐░▒▓∴∵';
+
+      // ============================================================
+      // GLOBAL STATE (single source of truth for controllers)
+      // ============================================================
+      let matrixController = null;
+      let audioCtx = null;
+      let statusRaf = null;
+      let isBreachActive = false;
+
+      // ============================================================
+      // UTILITY: SUBTLE TASTEFUL WEB AUDIO
+      // ============================================================
+      function ensureAudioContext() {
+        if (audioCtx) return audioCtx;
+        try {
+          audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        } catch (e) {
+          return null;
+        }
+        return audioCtx;
+      }
+
+      function playBlip(frequency = 1050, durationMs = 42, volume = 0.028) {
+        const ctx = ensureAudioContext();
+        if (!ctx) return;
+        if (ctx.state === 'suspended') ctx.resume().catch(() => {});
+
+        const t0 = ctx.currentTime;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        const filter = ctx.createBiquadFilter();
+
+        osc.type = 'sine';
+        osc.frequency.value = frequency;
+
+        filter.type = 'highpass';
+        filter.frequency.value = 720;
+
+        gain.gain.value = volume;
+
+        const t1 = t0 + (durationMs / 1000);
+
+        gain.gain.setValueAtTime(volume, t0);
+        gain.gain.linearRampToValueAtTime(0.0008, t1 + 0.015);
+
+        osc.connect(filter);
+        filter.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc.start(t0);
+        osc.stop(t1 + 0.04);
+      }
+
+      function playBreachSequence() {
+        // Tasteful, expensive "power surge" blips — not annoying
+        playBlip(610, 78, 0.055);
+        setTimeout(() => playBlip(915, 52, 0.041), 78);
+        setTimeout(() => playBlip(1310, 95, 0.033), 155);
+        setTimeout(() => playBlip(780, 48, 0.027), 265);
+      }
+
+      // ============================================================
+      // 1. MATRIX RAIN BACKGROUND (Canvas) — Full spec implementation
+      // ============================================================
+      function initMatrixRain() {
+        const canvas = document.createElement('canvas');
+        canvas.className = 'matrix-canvas';
+        document.body.insertBefore(canvas, document.body.firstChild);
+
+        const ctx = canvas.getContext('2d', { alpha: true, desynchronized: true });
+
+        let width = 0, height = 0, dpr = 1;
+        let columns = [];
+        let speedMult = 1.0;
+        let densityMult = 1.0;
+        let rafId = null;
+
+        const BASE_DESKTOP = 58;
+        const BASE_MOBILE = 29;
+
+        function getIsMobile() {
+          return width < 768;
+        }
+
+        function rebuildColumns() {
+          columns = [];
+          const isMobile = getIsMobile();
+          const baseCount = isMobile ? BASE_MOBILE : BASE_DESKTOP;
+          const count = Math.max(12, Math.floor(baseCount * densityMult));
+
+          const spacing = width / count;
+
+          for (let i = 0; i < count; i++) {
+            const baseSpeed = 0.72 + Math.random() * 0.88;
+            columns.push({
+              x: i * spacing + spacing * 0.48,
+              y: Math.random() * (height * -1.35),
+              speed: baseSpeed * (isMobile ? 0.88 : 1.0),
+              lastCharChange: 0
+            });
+          }
+        }
+
+        function resize() {
+          dpr = Math.min(window.devicePixelRatio || 1, 2.0);
+          width = window.innerWidth;
+          height = window.innerHeight;
+
+          canvas.width = Math.floor(width * dpr);
+          canvas.height = Math.floor(height * dpr);
+          canvas.style.width = width + 'px';
+          canvas.style.height = height + 'px';
+
+          ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+          rebuildColumns();
+        }
+
+        function draw() {
+          // Very subtle classic vertical trails
+          ctx.fillStyle = 'rgba(10, 10, 15, 0.078)';
+          ctx.fillRect(0, 0, width, height);
+
+          const isMobile = getIsMobile();
+          const fontSize = isMobile ? 11.5 : 13.8;
+          ctx.font = fontSize + 'px monospace';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+
+          const baseAlpha = isMobile ? 0.145 : 0.175;
+
+          const now = performance.now();
+
+          for (let i = 0; i < columns.length; i++) {
+            const col = columns[i];
+            let y = col.y;
+
+            // Draw 5-6 vertical trail characters (faint head at bottom)
+            for (let j = 0; j < 6; j++) {
+              const trailFactor = 1 - (j * 0.175);
+              let alpha = baseAlpha * trailFactor;
+
+              // Head (j===0) is brighter + occasional magenta pop
+              if (j === 0) {
+                alpha = Math.min(0.29, alpha * 1.45);
+                ctx.fillStyle = (Math.random() < 0.11) ? '#ff00aa' : '#00f9ff';
+              } else {
+                ctx.fillStyle = (Math.random() < 0.04) ? '#ff00aa' : '#00f9ff';
+              }
+
+              ctx.globalAlpha = Math.max(0.035, alpha);
+
+              // Occasional fresh character on head
+              if (j === 0 && (now - col.lastCharChange > 140 || Math.random() < 0.028)) {
+                col.char = MATRIX_CHARS.charAt(Math.floor(Math.random() * MATRIX_CHARS.length));
+                col.lastCharChange = now;
+              }
+
+              const char = col.char || MATRIX_CHARS.charAt((i + j) % MATRIX_CHARS.length);
+              ctx.fillText(char, col.x, y);
+
+              y -= (fontSize + 1.8); // upward trail
+            }
+
+            // Advance column (per-column speed variance + global mult)
+            const frameSpeed = col.speed * speedMult * (0.96 + Math.random() * 0.09);
+            col.y += frameSpeed;
+
+            // Reset when off-screen (with slight randomness)
+            if (col.y > height + 65) {
+              col.y = Math.random() * -95 - 35;
+              col.speed = (0.72 + Math.random() * 0.88) * (isMobile ? 0.88 : 1.0);
+            }
+          }
+
+          ctx.globalAlpha = 1.0;
+
+          rafId = requestAnimationFrame(draw);
+        }
+
+        // Public controller API (used by breach effect)
+        matrixController = {
+          setSpeed: function(mult) {
+            speedMult = Math.max(0.4, Math.min(3.2, mult));
+          },
+          setDensity: function(mult) {
+            const was = densityMult;
+            densityMult = Math.max(0.6, Math.min(2.1, mult));
+            if (Math.abs(densityMult - was) > 0.01) {
+              rebuildColumns();
+            }
+          },
+          forceResize: function() {
+            resize();
+          }
+        };
+
+        // Boot
+        window.addEventListener('resize', () => {
+          // Debounce slightly for stability
+          clearTimeout(window._matrixResizeT);
+          window._matrixResizeT = setTimeout(resize, 65);
+        }, { passive: true });
+
+        resize();
+        draw();
+
+        // Return for potential external control (not required)
+        return matrixController;
+      }
+
+      // ============================================================
+      // 2. LOOPING STATUS BAR + 3. CYCLING MESSAGES (synced)
+      // ============================================================
+      function initStatusBarLoop() {
+        const bar = document.querySelector('.status-bar');
+        if (!bar) return;
+
+        // Rebuild into exactly NUM_SEGMENTS premium segments
+        bar.innerHTML = '';
+        bar.style.position = 'relative';
+
+        const flex = document.createElement('div');
+        flex.className = 'flex h-full w-full';
+        flex.style.gap = '0px';
+
+        const segments = [];
+        for (let i = 0; i < NUM_SEGMENTS; i++) {
+          const seg = document.createElement('div');
+          seg.className = 'status-segment flex-1';
+          // Base dark state
+          seg.style.background = '#0a0a0f';
+          seg.style.boxShadow = 'none';
+          flex.appendChild(seg);
+          segments.push(seg);
+        }
+        bar.appendChild(flex);
+
+        // Create and inject the cycling message element (above the bar)
+        const statusContainer = bar.parentElement; // the max-w container
+        const msgEl = document.createElement('div');
+        msgEl.className = 'status-message';
+        msgEl.textContent = MESSAGES[0];
+        statusContainer.insertBefore(msgEl, bar);
+
+        // State
+        let cycleStart = performance.now();
+        let lastFilledCount = -1;
+        let lastMsgIdx = -1;
+
+        function updateSegments(progress) {
+          const filled = Math.floor(progress * NUM_SEGMENTS);
+
+          for (let i = 0; i < NUM_SEGMENTS; i++) {
+            const seg = segments[i];
+            const isActive = i < filled;
+            const isLeading = (i === filled && progress < 0.995);
+
+            if (!isActive && !isLeading) {
+              seg.style.background = '#0a0a0f';
+              seg.style.boxShadow = 'none';
+              seg.classList.remove('leading');
+              continue;
+            }
+
+            // Position along the full bar for beautiful cyan→magenta gradient trail
+            const t = i / (NUM_SEGMENTS - 1);
+
+            // Smooth interpolation between cyan and magenta
+            const r = Math.round(0 + (255 - 0) * Math.pow(t, 0.92));
+            const g = Math.round(249 + (0 - 249) * Math.pow(t, 0.88));
+            const b = Math.round(255 + (170 - 255) * Math.pow(t, 0.95));
+            const baseColor = `rgb(${r}, ${g}, ${b})`;
+
+            if (isLeading) {
+              // Leading bright "light" edge — the star of the segmented bar
+              seg.style.background = `linear-gradient(90deg, ${baseColor} 20%, #f0fcff 48%, ${baseColor} 82%)`;
+              seg.style.boxShadow = `0 0 7px #ffffff, 0 0 15px ${baseColor}, 0 0 26px #00f9ff88, inset 0 0 3px rgba(255,255,255,0.4)`;
+              seg.classList.add('leading');
+            } else {
+              seg.style.background = `linear-gradient(90deg, ${baseColor}dd, ${baseColor})`;
+              seg.style.boxShadow = `0 0 5px ${baseColor}, 0 0 12px ${baseColor}77, inset 0 0 2px rgba(255,255,255,0.28)`;
+              seg.classList.remove('leading');
+            }
+          }
+        }
+
+        function fadeMessage(newText) {
+          if (!msgEl) return;
+          msgEl.style.transition = 'opacity 155ms cubic-bezier(0.22,1,0.3,1)';
+          msgEl.style.opacity = '0';
+
+          setTimeout(() => {
+            msgEl.textContent = newText;
+            msgEl.style.opacity = '1';
+          }, 160);
+        }
+
+        function statusLoop() {
+          const now = performance.now();
+          const elapsed = now - cycleStart;
+          const progress = ((elapsed % BAR_CYCLE_MS) / BAR_CYCLE_MS);
+
+          // === SEGMENTED BAR UPDATE (JS-driven, perfect 3.8s loop) ===
+          updateSegments(progress);
+
+          // === SYNCED MESSAGE CYCLING ===
+          // Divide the 3.8s cycle into exactly 6 equal phases so every message appears cleanly
+          const msgIdx = Math.floor( (elapsed % BAR_CYCLE_MS) / (BAR_CYCLE_MS / MESSAGES.length) ) % MESSAGES.length;
+
+          if (msgIdx !== lastMsgIdx) {
+            lastMsgIdx = msgIdx;
+            fadeMessage(MESSAGES[msgIdx]);
+          }
+
+          // Subtle tasteful blips on segment advances (every other for calm)
+          const currentFilled = Math.floor(progress * NUM_SEGMENTS);
+          if (currentFilled > lastFilledCount && currentFilled > 0 && currentFilled < NUM_SEGMENTS) {
+            lastFilledCount = currentFilled;
+            if (currentFilled % 2 === 0) {
+              const pitch = 1120 + (currentFilled % 5) * 47;
+              playBlip(pitch, 29, 0.016);
+            }
+          }
+          if (progress < 0.018) {
+            lastFilledCount = -1; // ready for next clean cycle
+          }
+
+          // Continue the beautiful loop
+          statusRaf = requestAnimationFrame(statusLoop);
+        }
+
+        // Kick off the 3.8s master status + message loop
+        statusLoop();
+
+        // Expose a manual reset (used after breach for perfect clean state)
+        window.__resetStatusCycle = function() {
+          cycleStart = performance.now();
+          lastFilledCount = -1;
+          lastMsgIdx = -1;
+          if (msgEl) msgEl.textContent = MESSAGES[0];
+          // Force one clean frame
+          updateSegments(0);
+        };
+      }
+
+      // ============================================================
+      // 4. TITLE GLITCH BURSTS (random expensive danger bursts)
+      // ============================================================
+      function initTitleGlitchBursts() {
+        const title = document.querySelector('.glitch-title');
+        if (!title) return;
+
+        function triggerBurst() {
+          if (isBreachActive) return; // don't fight the big breach
+
+          title.classList.add('title-burst');
+
+          // Extra horizontal jitter + brightness via inline for 205ms (maximum premium impact)
+          const originalTransform = title.style.transform;
+          const originalFilter = title.style.filter;
+
+          title.style.transition = 'none';
+          title.style.transform = 'translate(-1.2px, 0.4px)';
+
+          setTimeout(() => {
+            title.classList.remove('title-burst');
+            title.style.transform = originalTransform || '';
+            title.style.filter = originalFilter || '';
+            title.style.transition = '';
+          }, 205);
+        }
+
+        function scheduleNext() {
+          const delay = TITLE_BURST_MIN + Math.random() * (TITLE_BURST_MAX - TITLE_BURST_MIN);
+          setTimeout(() => {
+            triggerBurst();
+            scheduleNext();
+          }, delay);
+        }
+
+        // First burst after a nice pause
+        setTimeout(scheduleNext, 6200);
+      }
+
+      // ============================================================
+      // 5. CTA BREACH EFFECT (dramatic 2.8s transmission)
+      // ============================================================
+      function initCTAHandler() {
+        const btn = document.querySelector('.initiate-uplink');
+        const terminal = document.querySelector('.terminal-face');
+        const alien = document.querySelector('.alien-head');
+        const holo = document.querySelector('.holographic-terminal');
+
+        if (!btn || !terminal) return;
+
+        function createTransmissionOverlay() {
+          const overlay = document.createElement('div');
+          overlay.className = 'transmission-overlay';
+
+          const content = document.createElement('div');
+          content.className = 'transmission-content';
+
+          const textWrap = document.createElement('div');
+          textWrap.className = 'transmission-text';
+
+          // Three-layer heavy glitch (RGB split explosion) — now "ACCESS DENIED" in bright pink
+          const layerBase = document.createElement('div');
+          layerBase.className = 'tx-glitch-layer tx-base';
+          layerBase.textContent = 'ACCESS DENIED';
+
+          const layerCyan = document.createElement('div');
+          layerCyan.className = 'tx-glitch-layer tx-cyan';
+          layerCyan.textContent = 'ACCESS DENIED';
+
+          const layerMag = document.createElement('div');
+          layerMag.className = 'tx-glitch-layer tx-magenta';
+          layerMag.textContent = 'ACCESS DENIED';
+
+          textWrap.appendChild(layerBase);
+          textWrap.appendChild(layerCyan);
+          textWrap.appendChild(layerMag);
+
+          content.appendChild(textWrap);
+          overlay.appendChild(content);
+
+          return overlay;
+        }
+
+        function triggerBreachEffect() {
+          if (isBreachActive) return;
+          isBreachActive = true;
+
+          // === 1. Terminal: intense multi-glow flash + fast stutter (3 layers) ===
+          terminal.classList.add('breach-active');
+          if (holo) holo.classList.add('breach-stutter');
+
+          // === 2. Alien head: dramatically more violent glitch ===
+          if (alien) alien.classList.add('breach-glitch');
+
+          // === 3. Matrix rain: 2.3x speed + significantly denser for 2.8s ===
+          if (matrixController) {
+            matrixController.setSpeed(2.32);
+            matrixController.setDensity(1.48);
+          }
+
+          // === 4. Full-screen powerful transmission overlay ===
+          const overlay = createTransmissionOverlay();
+          document.body.appendChild(overlay);
+
+          // Dramatic entrance
+          requestAnimationFrame(() => {
+            overlay.style.transition = 'opacity 90ms ease';
+            overlay.style.opacity = '0';
+            overlay.style.display = 'flex';
+            requestAnimationFrame(() => {
+              overlay.style.opacity = '1';
+            });
+          });
+
+          // === 5. Tasteful audio pulse ===
+          playBreachSequence();
+
+          // === EXACT 2.8s clean reset to normal premium looping state ===
+          setTimeout(() => {
+            // Remove breach classes
+            terminal.classList.remove('breach-active');
+            if (holo) holo.classList.remove('breach-stutter');
+            if (alien) alien.classList.remove('breach-glitch');
+
+            // Restore matrix to calm state
+            if (matrixController) {
+              matrixController.setSpeed(1.0);
+              matrixController.setDensity(1.0);
+            }
+
+            // Beautiful fade out + removal of overlay
+            overlay.style.transition = 'opacity 195ms cubic-bezier(0.22,1,0.3,1)';
+            overlay.style.opacity = '0';
+
+            setTimeout(() => {
+              if (overlay && overlay.parentNode) overlay.parentNode.removeChild(overlay);
+            }, 210);
+
+            // Force status bar + messages back to perfect clean start of loop
+            if (window.__resetStatusCycle) {
+              window.__resetStatusCycle();
+            }
+
+            isBreachActive = false;
+          }, BREACH_DURATION_MS);
+        }
+
+        // Attach the dramatic click behavior
+        btn.addEventListener('click', (e) => {
+          e.preventDefault();
+          triggerBreachEffect();
+        });
+
+        // Keyboard accessibility (space/enter triggers same visual)
+        btn.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            triggerBreachEffect();
+          }
+        });
+      }
+
+      // ============================================================
+      // MASTER INITIALIZER — called on DOMContentLoaded
+      // ============================================================
+      function initializeAllAnimations() {
+        // 1. Matrix Rain (full-screen subtle cyberpunk rain)
+        initMatrixRain();
+
+        // 2 + 3. Status bar loop + synced mysterious messages
+        initStatusBarLoop();
+
+        // 4. Random title glitch bursts
+        initTitleGlitchBursts();
+
+        // 5 + 6. CTA breach effect + hover polish
+        initCTAHandler();
+
+        // Optional: gentle first-frame nudge so everything feels alive immediately
+        setTimeout(() => {
+          const title = document.querySelector('.glitch-title');
+          if (title && !isBreachActive) {
+            // tiny initial emphasis (no full burst)
+            title.style.transition = 'filter 420ms ease';
+            title.style.filter = 'brightness(1.1)';
+            setTimeout(() => {
+              if (title) title.style.filter = '';
+            }, 420);
+          }
+        }, 1350);
+
+        // All systems decoupled, rAF-driven, DPR-aware, mobile-optimized, gracefully degrade.
+        // (Dev log removed for production cleanliness)
+      }
+
+      // Boot everything cleanly
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initializeAllAnimations, { once: true });
+      } else {
+        initializeAllAnimations();
+      }
+    })();
+  </script>
+
+  <!-- ============================================================
+       SUPPLEMENTAL: RANDOM SYSTEM LOGS + INTERACTIVE HACKER COMMANDS
+       Self-contained IIFE. Does NOT touch matrix/status/breach code.
+       Uses existing #log + .terminal-face + reuses AudioContext pattern.
+       Mobile-aware timing + premium non-spammy interaction.
+       ============================================================ -->
+  <script>
+    (function() {
+      'use strict';
+
+      // --- Minimal independent audio tick (subtle, premium "console" feel) ---
+      // Replicates the spirit of the main playBlip without any shared state.
+      let tickCtx = null;
+      function playTick(frequency = 1240, durationMs = 18, volume = 0.019) {
+        try {
+          if (!tickCtx) {
+            tickCtx = new (window.AudioContext || window.webkitAudioContext)();
+          }
+          if (tickCtx.state === 'suspended') tickCtx.resume().catch(() => {});
+          const t0 = tickCtx.currentTime;
+          const osc = tickCtx.createOscillator();
+          const gain = tickCtx.createGain();
+          const hp = tickCtx.createBiquadFilter();
+
+          osc.type = 'sine';
+          osc.frequency.value = frequency;
+          hp.type = 'highpass';
+          hp.frequency.value = 680;
+          gain.gain.value = volume;
+
+          const t1 = t0 + (durationMs / 1000);
+          gain.gain.setValueAtTime(volume, t0);
+          gain.gain.linearRampToValueAtTime(0.0006, t1 + 0.012);
+
+          osc.connect(hp);
+          hp.connect(gain);
+          gain.connect(tickCtx.destination);
+
+          osc.start(t0);
+          osc.stop(t1 + 0.03);
+        } catch (e) { /* silent graceful degradation */ }
+      }
+
+      // --- Shared log injector: prepends (newest top), caps at 5, gentle fades ---
+      function injectLogLine(text, variant) {
+        variant = variant || 'system';
+        const log = document.getElementById('log');
+        if (!log) return;
+
+        // Prune excess oldest lines (bottom of list) with fade-out
+        while (log.children.length >= 5) {
+          const oldest = log.lastElementChild;
+          if (oldest) {
+            oldest.style.transition = 'opacity 230ms ease';
+            oldest.style.opacity = '0';
+            setTimeout(function() {
+              if (oldest && oldest.parentNode) oldest.parentNode.removeChild(oldest);
+            }, 240);
+          }
+        }
+
+        const line = document.createElement('div');
+        line.className = 'log-line log-' + variant;
+        line.textContent = text;
+        line.style.opacity = '0';
+
+        // Prepend = newest always appears at top
+        if (log.firstChild) {
+          log.insertBefore(line, log.firstChild);
+        } else {
+          log.appendChild(line);
+        }
+
+        // 180ms fade-in (requestAnimationFrame for reliable start)
+        requestAnimationFrame(function() {
+          line.style.transition = 'opacity 180ms cubic-bezier(0.22, 1, 0.3, 1)';
+          let target = '0.56';
+          if (variant === 'command') target = '0.81';
+          else if (variant === 'response') target = '0.67';
+          else if (variant === 'system-magenta') target = '0.49';
+          line.style.opacity = target;
+        });
+      }
+
+      // --- RANDOM TERMINAL LOG LINES (atmospheric neural OS chatter) ---
+      function initRandomLogs() {
+        const log = document.getElementById('log');
+        if (!log) return;
+
+        // Advancing simulated clock for believable progressing timestamps
+        let simClock = new Date(Date.now() - (1000 * 60 * 31) - Math.random() * 1000 * 60 * 9);
+
+        function getTS() {
+          const h = String(simClock.getHours()).padStart(2, '0');
+          const m = String(simClock.getMinutes()).padStart(2, '0');
+          const s = String(simClock.getSeconds()).padStart(2, '0');
+          return h + ':' + m + ':' + s;
+        }
+
+        function advanceClock() {
+          const delta = 7.5 + Math.random() * 19.5; // realistic variable spacing
+          simClock = new Date(simClock.getTime() + delta * 1000);
+        }
+
+        const TEMPLATES = [
+          function(ts) { return '[' + ts + '] Neural link stable • ' + (1320 + Math.floor(Math.random()*680)) + ' users connected • Core temp: ' + (46.8 + Math.random()*2.7).toFixed(1) + 'K'; },
+          function(ts) { return '[' + ts + '] Shadow archive sync complete • 0.000' + (Math.floor(Math.random()*6)+2) + '% packet loss'; },
+          function(ts) { return '[' + ts + '] Quantum lattice integrity: 99.' + (95 + Math.floor(Math.random()*5)) + '%'; },
+          function(ts) { return '[' + ts + '] Uplink beacon received from SECTOR-0' + (Math.floor(Math.random()*8)+2) + 'X'; },
+          function(ts) { return '[' + ts + '] ' + (4120 + Math.floor(Math.random()*3100)) + ' new neural signatures detected'; },
+          function()   { return '>> RECURSION DEPTH: ' + (6 + Math.floor(Math.random()*6)) + ' • ANOMALY PROBABILITY: 0.000' + (Math.floor(Math.random()*7)+2) + '%'; },
+          function(ts) { return '[' + ts + '] Cortex firewall pulse • ' + (1 + Math.floor(Math.random()*3)) + ' threats neutralized'; },
+          function(ts) { return '[' + ts + '] Echo chamber resonance: ' + (98.3 + Math.random()*1.55).toFixed(2) + '%'; },
+          function(ts) { return '[' + ts + '] Subnet ' + (4 + Math.floor(Math.random()*14)) + 'A handshake • LATENCY ' + (Math.floor(Math.random()*4)+1) + 'ms'; },
+          function()   { return '>> CORE THREAD ' + (780 + Math.floor(Math.random()*190)) + ' • STANDBY VECTOR NOMINAL'; },
+          function(ts) { return '[' + ts + '] Memory weave compaction: ' + Math.floor(Math.random()*3) + '.' + Math.floor(Math.random()*9) + '% reclaimed'; },
+          function(ts) { return '[' + ts + '] Phantom relay from NODE-' + String(11 + Math.floor(Math.random()*88)).padStart(2,'0') + ' • ACK'; }
+        ];
+
+        function spawnRandom() {
+          if (document.visibilityState === 'hidden') return;
+          advanceClock();
+          const ts = getTS();
+          const tmpl = TEMPLATES[Math.floor(Math.random() * TEMPLATES.length)];
+          const text = tmpl(ts);
+          const isMagenta = Math.random() < 0.19;
+          injectLogLine(text, isMagenta ? 'system-magenta' : 'system');
+        }
+
+        // Seed 2-3 lines quickly so the terminal feels alive on arrival
+        setTimeout(function() {
+          spawnRandom();
+          setTimeout(function() { spawnRandom(); }, 620);
+        }, 1380);
+
+        // Poisson-style randomized scheduler (never predictable)
+        function scheduleNext() {
+          const isMobile = window.innerWidth < 768;
+          const minDelay = isMobile ? 9100 : 6550;
+          const maxDelay = isMobile ? 15700 : 12850;
+          const delay = minDelay + Math.random() * (maxDelay - minDelay);
+
+          setTimeout(function() {
+            spawnRandom();
+            scheduleNext();
+          }, delay);
+        }
+        scheduleNext();
+      }
+
+      // --- INTERACTIVE COMMAND INJECTION (click .terminal-face) ---
+      function initTerminalInteraction() {
+        const face = document.querySelector('.terminal-face');
+        if (!face) return;
+
+        const COMMANDS = [
+          '> OVERRIDE_SEQUENCE_0xA7F',
+          '> PING SHADOW_NODE_14',
+          '> DECRYPT //core/phantom.seed',
+          '> QUERY_NEURAL_MESH 0x3E',
+          '> TRACE UPLINK VECTOR ALPHA',
+          '> INJECT_PATCH //sys/kernel.ghost',
+          '> SYNC RECURSION STACK 7',
+          '> CALIBRATE PHANTOM ARRAY'
+        ];
+
+        const RESPONSES = [
+          'RESPONSE: EXECUTED • NO ANOMALIES',
+          'RESPONSE: CORE ACKNOWLEDGES • STANDBY PROTOCOL MAINTAINED',
+          'RESPONSE: TRANSMISSION WINDOW OPENS IN 00:00:00.00',
+          'RESPONSE: 9,441,000 NEURAL THREADS ACTIVE',
+          'RESPONSE: ANOMALY SCAN COMPLETE • 0 THREATS',
+          'RESPONSE: SHADOW ARCHIVE NODE CONFIRMED',
+          'RESPONSE: QUANTUM LATTICE RESONANCE NOMINAL',
+          'RESPONSE: GHOST PROTOCOLS ENGAGED'
+        ];
+
+        let lastInteraction = 0;
+
+        face.addEventListener('click', function(e) {
+          // Respect CTA button and the log area itself (selection + no accidental spam)
+          if (e.target.closest('.initiate-uplink') || e.target.closest('#log')) return;
+
+          const now = Date.now();
+          if (now - lastInteraction < 435) return; // premium, intentional pacing
+          lastInteraction = now;
+
+          // Command line (user "hacking" input)
+          const cmd = COMMANDS[Math.floor(Math.random() * COMMANDS.length)];
+          injectLogLine(cmd, 'command');
+          playTick(1310, 14, 0.023); // subtle console keystroke
+
+          // Response after realistic micro-delay (180-280ms)
+          const delay = 185 + Math.random() * 95;
+          setTimeout(function() {
+            const resp = RESPONSES[Math.floor(Math.random() * RESPONSES.length)];
+            injectLogLine(resp, 'response');
+            playTick(870, 24, 0.014); // softer confident ack
+          }, delay);
+        }, { passive: true });
+      }
+
+      // Boot this layer a hair after main animations are live
+      function boot() {
+        const kick = function() {
+          initRandomLogs();
+          initTerminalInteraction();
+        };
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', function() { setTimeout(kick, 80); }, { once: true });
+        } else {
+          setTimeout(kick, 80);
+        }
+      }
+
+      boot();
+    })();
+  </script>
+</body>
+</html>
