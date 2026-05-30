@@ -31,6 +31,10 @@
       transform: perspective(920px) rotateX(2.1deg);
       transform-origin: center;
       will-change: transform;
+
+      /* Ensure true horizontal centering on any window size */
+      margin-left: auto !important;
+      margin-right: auto !important;
     }
 
     /* === MULTI-LAYERED NEON BORDERS + HEAVY GLOW === */
@@ -630,7 +634,7 @@
         rgba(12, 12, 18, 0.32) 22%,
         rgba(6, 6, 10, 0.96) 68%
       );
-      backdrop-filter: blur(0.6px);
+      /* Removed blur for crisp text rendering */
       pointer-events: none;
     }
 
@@ -668,6 +672,13 @@
       display: inline-block;
       /* Let the flex parent handle true centering */
       text-align: center;
+
+      /* Crisp text rendering - critical for readability */
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      text-rendering: geometricPrecision;
+      transform: translateZ(0); /* promote to GPU layer for sharper rendering */
+
       text-shadow:
         0 0 14px #ff00aa,
         0 0 32px #ff00aacc,
@@ -680,9 +691,14 @@
       left: 50%;
       top: 0;
       /* This is the key for true centering of glitch layers */
-      transform: translateX(-50%);
+      transform: translateX(-50%) translateZ(0);
       white-space: nowrap;
       pointer-events: none;
+
+      /* Crisp text rendering - critical for readability */
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      text-rendering: geometricPrecision;
     }
 
     .tx-base { color: #ff00aa; z-index: 3; }
@@ -701,17 +717,18 @@
 
     @keyframes tx-heavy-glitch {
       0%, 100% { transform: translateX(-50%) translate(0,0); }
-      6%  { transform: translateX(-50%) translate(-2.8px, 0.8px); }
-      13% { transform: translateX(-50%) translate(2.8px, -0.8px); }
-      19% { transform: translateX(-50%) translate(-2.2px, 1.1px); }
-      27% { transform: translateX(-50%) translate(2.4px, -1.0px); }
-      34% { transform: translateX(-50%) translate(-1.8px, 0.9px); }
-      42% { transform: translateX(-50%) translate(2.0px, -0.7px); }
-      51% { transform: translateX(-50%) translate(-1.2px, 0.5px); }
+      8%  { transform: translateX(-50%) translate(-1.5px, 0.4px); }
+      18% { transform: translateX(-50%) translate(1.6px, -0.5px); }
+      28% { transform: translateX(-50%) translate(-1.2px, 0.6px); }
+      38% { transform: translateX(-50%) translate(1.3px, -0.4px); }
+      48% { transform: translateX(-50%) translate(-0.9px, 0.3px); }
+      58% { transform: translateX(-50%) translate(1.1px, -0.3px); }
+      68% { transform: translateX(-50%) translate(-0.6px, 0.2px); }
     }
 
     .transmission-text .tx-glitch-layer {
-      animation: tx-heavy-glitch 0.135s linear infinite;
+      /* Slowed down significantly for much better readability while keeping the cyberpunk feel */
+      animation: tx-heavy-glitch 0.65s linear infinite;
     }
     .transmission-text .tx-cyan { animation-delay: 0.028s; }
     .transmission-text .tx-magenta { animation-delay: 0.065s; }
@@ -794,10 +811,10 @@
         font-size: clamp(3.1rem, 13vw, 4.1rem);
       }
 
-      /* Make ACCESS DENIED overlay text even more dominant on small screens */
+      /* Make ACCESS DENIED overlay text much more readable on small screens */
       .transmission-text {
-        font-size: clamp(2.1rem, 11vw, 3.1rem);
-        letter-spacing: 6px;
+        font-size: clamp(2.6rem, 12vw, 3.4rem);
+        letter-spacing: 5px;
       }
     }
 
@@ -807,7 +824,9 @@
       }
     }
 
-    /* Defensive visibility rules in case of CSS parse issues from previous edits */
+    /* Strong defensive rules to recover from black screen / CSS breakage */
+    body,
+    .min-h-screen,
     .holographic-terminal,
     .neon-frame-outer,
     .neon-frame-mid,
@@ -815,12 +834,22 @@
       display: block !important;
       opacity: 1 !important;
       visibility: visible !important;
-      min-height: 300px !important;
+    }
+
+    .terminal-face {
+      background: #111117 !important;
+      min-height: 420px !important;
     }
 
     .glitch-title,
-    .text-\[\#00f9ff\] {
+    .text-\[\#00f9ff\],
+    .text-\[\#9fbccc\] {
       color: #e0f4ff !important;
+    }
+
+    .alien-icon {
+      display: flex !important;
+      justify-content: center !important;
     }
   </style>
 </head>
@@ -832,7 +861,7 @@
     <div class="global-vignette"></div>
 
     <!-- CENTERED HOLOGRAPHIC TERMINAL WINDOW -->
-    <div class="holographic-terminal w-full max-w-[810px] relative z-10">
+    <div class="holographic-terminal w-full max-w-[810px] mx-auto relative z-10">
 
       <!-- MULTI-LAYERED NEON BORDER FRAME -->
       <div class="neon-frame-outer">
@@ -1002,7 +1031,7 @@
 
               <!-- TEASER TEXT -->
               <div class="text-[#9fbccc] text-[12.8px] tracking-[0.8px] max-w-[300px] mx-auto leading-tight">
-                Something massive is awakening in the shadows.
+                Something big is coming soon.
               </div>
 
               <!-- LARGE GLOWING CTA BUTTON -->
