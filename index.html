@@ -813,14 +813,42 @@
 
       /* Make ACCESS DENIED overlay text much more readable on small screens */
       .transmission-text {
-        font-size: clamp(2.6rem, 12vw, 3.4rem);
-        letter-spacing: 5px;
+        font-size: clamp(2.8rem, 13vw, 3.6rem);
+        letter-spacing: 4px;
+
+        /* Softer glow on mobile to reduce blur while keeping the pink pop */
+        text-shadow:
+          0 0 8px #ff00aa,
+          0 0 18px #ff00aa99 !important;
+      }
+
+      /* Aggressively simplify the glitch on mobile to prevent pink blur */
+      .transmission-text .tx-glitch-layer {
+        animation-duration: 1.8s !important; /* much slower */
+        transform: translateX(-50%) !important; /* reduce movement */
+      }
+
+      /* Reduce blend mode intensity on mobile for sharpness */
+      .tx-cyan,
+      .tx-magenta {
+        mix-blend-mode: normal !important;
+        opacity: 0.6;
       }
     }
 
     @media (max-width: 380px) {
       .holographic-terminal {
         transform: none !important;
+      }
+
+      /* Even more readable ACCESS DENIED on tiny phones */
+      .transmission-text {
+        font-size: clamp(2.9rem, 14vw, 3.8rem) !important;
+      }
+
+      /* Further calm the glitch on very small screens */
+      .transmission-text .tx-glitch-layer {
+        animation-duration: 2.4s !important;
       }
     }
 
@@ -1213,64 +1241,71 @@
         }
 
         function draw() {
-          // Very subtle classic vertical trails
-          ctx.fillStyle = 'rgba(10, 10, 15, 0.078)';
-          ctx.fillRect(0, 0, width, height);
+          try {
+            // Very subtle classic vertical trails
+            ctx.fillStyle = 'rgba(10, 10, 15, 0.078)';
+            ctx.fillRect(0, 0, width, height);
 
-          const isMobile = getIsMobile();
-          const fontSize = isMobile ? 11.5 : 13.8;
-          ctx.font = fontSize + 'px monospace';
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
+            const isMobile = getIsMobile();
+            const fontSize = isMobile ? 11.5 : 13.8;
+            ctx.font = fontSize + 'px monospace';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
 
-          const baseAlpha = isMobile ? 0.145 : 0.175;
+            const baseAlpha = isMobile ? 0.145 : 0.175;
 
-          const now = performance.now();
+            const now = performance.now();
 
-          for (let i = 0; i < columns.length; i++) {
-            const col = columns[i];
-            let y = col.y;
+            for (let i = 0; i < columns.length; i++) {
+              const col = columns[i];
+              let y = col.y;
 
-            // Draw 5-6 vertical trail characters (faint head at bottom)
-            for (let j = 0; j < 6; j++) {
-              const trailFactor = 1 - (j * 0.175);
-              let alpha = baseAlpha * trailFactor;
+              // Draw 5-6 vertical trail characters (faint head at bottom)
+              for (let j = 0; j < 6; j++) {
+                const trailFactor = 1 - (j * 0.175);
+                let alpha = baseAlpha * trailFactor;
 
-              // Head (j===0) is brighter + occasional magenta pop
-              if (j === 0) {
-                alpha = Math.min(0.29, alpha * 1.45);
-                ctx.fillStyle = (Math.random() < 0.11) ? '#ff00aa' : '#00f9ff';
-              } else {
-                ctx.fillStyle = (Math.random() < 0.04) ? '#ff00aa' : '#00f9ff';
+                // Head (j===0) is brighter + occasional magenta pop
+                if (j === 0) {
+                  alpha = Math.min(0.29, alpha * 1.45);
+                  ctx.fillStyle = (Math.random() < 0.11) ? '#ff00aa' : '#00f9ff';
+                } else {
+                  ctx.fillStyle = (Math.random() < 0.04) ? '#ff00aa' : '#00f9ff';
+                }
+
+                ctx.globalAlpha = Math.max(0.035, alpha);
+
+                // Occasional fresh character on head
+                if (j === 0 && (now - col.lastCharChange > 140 || Math.random() < 0.028)) {
+                  col.char = MATRIX_CHARS.charAt(Math.floor(Math.random() * MATRIX_CHARS.length));
+                  col.lastCharChange = now;
+                }
+
+                const char = col.char || MATRIX_CHARS.charAt((i + j) % MATRIX_CHARS.length);
+                ctx.fillText(char, col.x, y);
+
+                y -= (fontSize + 1.8); // upward trail
               }
 
-              ctx.globalAlpha = Math.max(0.035, alpha);
+              // Advance column (per-column speed variance + global mult)
+              const frameSpeed = col.speed * speedMult * (0.96 + Math.random() * 0.09);
+              col.y += frameSpeed;
 
-              // Occasional fresh character on head
-              if (j === 0 && (now - col.lastCharChange > 140 || Math.random() < 0.028)) {
-                col.char = MATRIX_CHARS.charAt(Math.floor(Math.random() * MATRIX_CHARS.length));
-                col.lastCharChange = now;
+              // Reset when off-screen (with slight randomness)
+              if (col.y > height + 65) {
+                col.y = Math.random() * -95 - 35;
+                col.speed = (0.72 + Math.random() * 0.88) * (isMobile ? 0.88 : 1.0);
               }
-
-              const char = col.char || MATRIX_CHARS.charAt((i + j) % MATRIX_CHARS.length);
-              ctx.fillText(char, col.x, y);
-
-              y -= (fontSize + 1.8); // upward trail
             }
 
-            // Advance column (per-column speed variance + global mult)
-            const frameSpeed = col.speed * speedMult * (0.96 + Math.random() * 0.09);
-            col.y += frameSpeed;
-
-            // Reset when off-screen (with slight randomness)
-            if (col.y > height + 65) {
-              col.y = Math.random() * -95 - 35;
-              col.speed = (0.72 + Math.random() * 0.88) * (isMobile ? 0.88 : 1.0);
-            }
+            ctx.globalAlpha = 1.0;
+          } catch (e) {
+            // Prevent one bad frame from killing the entire animation
+            console.warn('[Matrix] draw error (recovering):', e);
           }
 
-          ctx.globalAlpha = 1.0;
-
+          // Cancel any previous frame before scheduling next (prevents accumulation)
+          if (rafId) cancelAnimationFrame(rafId);
           rafId = requestAnimationFrame(draw);
         }
 
@@ -1288,6 +1323,15 @@
           },
           forceResize: function() {
             resize();
+          },
+          // Added for stability: allow clean restart of the loop
+          restart: function() {
+            if (rafId) {
+              cancelAnimationFrame(rafId);
+              rafId = null;
+            }
+            resize();
+            draw();
           }
         };
 
@@ -1393,36 +1437,42 @@
         }
 
         function statusLoop() {
-          const now = performance.now();
-          const elapsed = now - cycleStart;
-          const progress = ((elapsed % BAR_CYCLE_MS) / BAR_CYCLE_MS);
+          try {
+            const now = performance.now();
+            const elapsed = now - cycleStart;
+            const progress = ((elapsed % BAR_CYCLE_MS) / BAR_CYCLE_MS);
 
-          // === SEGMENTED BAR UPDATE (JS-driven, perfect 3.8s loop) ===
-          updateSegments(progress);
+            // === SEGMENTED BAR UPDATE (JS-driven, perfect 3.8s loop) ===
+            updateSegments(progress);
 
-          // === SYNCED MESSAGE CYCLING ===
-          // Divide the 3.8s cycle into exactly 6 equal phases so every message appears cleanly
-          const msgIdx = Math.floor( (elapsed % BAR_CYCLE_MS) / (BAR_CYCLE_MS / MESSAGES.length) ) % MESSAGES.length;
+            // === SYNCED MESSAGE CYCLING ===
+            // Divide the 3.8s cycle into exactly 6 equal phases so every message appears cleanly
+            const msgIdx = Math.floor( (elapsed % BAR_CYCLE_MS) / (BAR_CYCLE_MS / MESSAGES.length) ) % MESSAGES.length;
 
-          if (msgIdx !== lastMsgIdx) {
-            lastMsgIdx = msgIdx;
-            fadeMessage(MESSAGES[msgIdx]);
-          }
-
-          // Subtle tasteful blips on segment advances (every other for calm)
-          const currentFilled = Math.floor(progress * NUM_SEGMENTS);
-          if (currentFilled > lastFilledCount && currentFilled > 0 && currentFilled < NUM_SEGMENTS) {
-            lastFilledCount = currentFilled;
-            if (currentFilled % 2 === 0) {
-              const pitch = 1120 + (currentFilled % 5) * 47;
-              playBlip(pitch, 29, 0.016);
+            if (msgIdx !== lastMsgIdx) {
+              lastMsgIdx = msgIdx;
+              fadeMessage(MESSAGES[msgIdx]);
             }
-          }
-          if (progress < 0.018) {
-            lastFilledCount = -1; // ready for next clean cycle
+
+            // Subtle tasteful blips on segment advances (every other for calm)
+            const currentFilled = Math.floor(progress * NUM_SEGMENTS);
+            if (currentFilled > lastFilledCount && currentFilled > 0 && currentFilled < NUM_SEGMENTS) {
+              lastFilledCount = currentFilled;
+              if (currentFilled % 2 === 0) {
+                const pitch = 1120 + (currentFilled % 5) * 47;
+                playBlip(pitch, 29, 0.016);
+              }
+            }
+            if (progress < 0.018) {
+              lastFilledCount = -1; // ready for next clean cycle
+            }
+          } catch (e) {
+            // Prevent one bad frame from killing the status animation
+            console.warn('[Status] loop error (recovering):', e);
           }
 
-          // Continue the beautiful loop
+          // Cancel any previous frame before scheduling next
+          if (statusRaf) cancelAnimationFrame(statusRaf);
           statusRaf = requestAnimationFrame(statusLoop);
         }
 
@@ -1431,12 +1481,18 @@
 
         // Expose a manual reset (used after breach for perfect clean state)
         window.__resetStatusCycle = function() {
+          if (statusRaf) {
+            cancelAnimationFrame(statusRaf);
+            statusRaf = null;
+          }
           cycleStart = performance.now();
           lastFilledCount = -1;
           lastMsgIdx = -1;
           if (msgEl) msgEl.textContent = MESSAGES[0];
           // Force one clean frame
           updateSegments(0);
+          // Restart the loop cleanly
+          statusLoop();
         };
       }
 
