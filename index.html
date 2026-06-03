@@ -1,0 +1,1259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LOEWFIZZLE • MAINFRAME</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Space+Grotesk:wght@500;600&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap');
+
+    :root {
+      --cyan: #00f0ff;
+      --violet: #c026ff;
+      --lime: #22ff88;
+      --alert: #ff2a2a;
+      --bg: #050505;
+      --panel: #0a0a12;
+      --panel-2: #111118;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', system_ui, sans-serif;
+      background: var(--bg);
+      color: #e5e7eb;
+      overflow-x: hidden;
+    }
+
+    .mono { font-family: 'JetBrains Mono', ui-monospace, monospace; }
+
+    .futuristic {
+      font-family: 'Space Grotesk', 'Inter', system_ui, sans-serif;
+      font-feature-settings: "ss02";
+    }
+
+    /* === SUBTLE BACKGROUND GRID + SCANLINES === */
+    .bg-grid {
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(0, 240, 255, 0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 240, 255, 0.035) 1px, transparent 1px);
+      background-size: 38px 38px;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .scanlines {
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(
+        to bottom,
+        transparent 0%,
+        transparent 48%,
+        rgba(255,255,255,0.032) 49%,
+        rgba(255,255,255,0.032) 50%,
+        transparent 51%
+      );
+      background-size: 100% 5px;
+      pointer-events: none;
+      z-index: 2;
+      animation: scan-drift 4.2s linear infinite;
+      mix-blend-mode: screen;
+      opacity: 0.65;
+    }
+
+    @keyframes scan-drift {
+      0% { background-position: 0 0; }
+      100% { background-position: 0 190px; }
+    }
+
+    .vignette {
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(
+        circle at 50% 42%,
+        transparent 52%,
+        rgba(5, 5, 5, 0.55) 78%,
+        rgba(5, 5, 5, 0.88) 94%
+      );
+      pointer-events: none;
+      z-index: 3;
+    }
+
+    /* === CONSOLE FRAME — LAYERED NEON === */
+    .console-frame {
+      position: relative;
+      border-radius: 20px;
+      padding: 4px;
+      background: linear-gradient(145deg, rgba(0,240,255,0.18), rgba(192,38,255,0.12), rgba(0,240,255,0.08));
+      box-shadow:
+        0 0 0 1px rgba(0, 240, 255, 0.12),
+        0 0 18px rgba(0, 240, 255, 0.18),
+        0 0 42px rgba(0, 240, 255, 0.07),
+        0 25px 70px -15px rgba(0, 0, 0, 0.8);
+    }
+
+    .console-frame::before {
+      content: '';
+      position: absolute;
+      inset: 4px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, rgba(192,38,255,0.09), transparent 45%, rgba(0,240,255,0.07));
+      pointer-events: none;
+    }
+
+    .console-inner {
+      background: var(--panel);
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.06);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.035),
+        inset 0 -1px 0 rgba(0,0,0,0.6),
+        0 0 0 1px rgba(0, 240, 255, 0.06);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .console-inner::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 50% 20%, rgba(0,240,255,0.015) 0%, transparent 55%);
+      pointer-events: none;
+    }
+
+    /* === PREMIUM GLOW UTILITIES === */
+    .neon-cyan {
+      text-shadow:
+        0 0 4px rgba(0, 240, 255, 0.6),
+        0 0 12px rgba(0, 240, 255, 0.35),
+        0 0 28px rgba(0, 240, 255, 0.18);
+    }
+
+    .neon-violet {
+      text-shadow:
+        0 0 5px rgba(192, 38, 255, 0.65),
+        0 0 14px rgba(192, 38, 255, 0.38),
+        0 0 30px rgba(192, 38, 255, 0.2);
+    }
+
+    .neon-lime {
+      text-shadow:
+        0 0 4px rgba(34, 255, 136, 0.55),
+        0 0 11px rgba(34, 255, 136, 0.32);
+    }
+
+    .neon-red {
+      text-shadow:
+        0 0 6px rgba(255, 42, 42, 0.8),
+        0 0 18px rgba(255, 42, 42, 0.55),
+        0 0 38px rgba(255, 42, 42, 0.32);
+    }
+
+    /* === STATUS CARDS === */
+    .status-card {
+      background: var(--panel-2);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 12px;
+      padding: 13px 14px 11px;
+      transition: all 0.2s cubic-bezier(0.23, 1.0, 0.32, 1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .status-card:hover {
+      border-color: rgba(0, 240, 255, 0.25);
+      box-shadow: 0 0 0 1px rgba(0, 240, 255, 0.1);
+    }
+
+    .status-label {
+      font-size: 9.5px;
+      letter-spacing: 1.5px;
+      font-weight: 500;
+      color: #9ca3af;
+    }
+
+    .status-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: -0.3px;
+    }
+
+    .gauge-svg {
+      width: 100%;
+      height: 42px;
+      display: block;
+    }
+
+    /* === THE CORE ORB — MULTI-LAYERED === */
+    .core-orb {
+      width: 152px;
+      height: 152px;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .orb-ring {
+      position: absolute;
+      border-radius: 9999px;
+      border: 1.5px solid;
+      box-shadow: 0 0 12px currentColor;
+      transition: box-shadow 0.3s ease;
+    }
+
+    .orb-ring-1 {
+      width: 152px; height: 152px;
+      border-color: rgba(0, 240, 255, 0.55);
+      box-shadow: 0 0 14px rgba(0, 240, 255, 0.5), 0 0 32px rgba(0, 240, 255, 0.22);
+      animation: orb-rotate 22s linear infinite;
+    }
+
+    .orb-ring-2 {
+      width: 118px; height: 118px;
+      border-color: rgba(192, 38, 255, 0.65);
+      box-shadow: 0 0 11px rgba(192, 38, 255, 0.55), 0 0 26px rgba(192, 38, 255, 0.25);
+      animation: orb-rotate 14s linear infinite reverse;
+    }
+
+    .orb-ring-3 {
+      width: 82px; height: 82px;
+      border-color: rgba(34, 255, 136, 0.6);
+      box-shadow: 0 0 8px rgba(34, 255, 136, 0.45);
+      animation: orb-rotate 9.5s linear infinite;
+    }
+
+    .orb-core {
+      width: 54px;
+      height: 54px;
+      border-radius: 9999px;
+      background: radial-gradient(circle at 38% 32%, #ffffff, #a5f3fc 22%, #00f0ff 48%, #0a0a12 78%);
+      box-shadow:
+        0 0 9px rgba(0, 240, 255, 0.9),
+        0 0 22px rgba(0, 240, 255, 0.65),
+        0 0 44px rgba(0, 240, 255, 0.38),
+        inset 0 0 12px rgba(255,255,255,0.75),
+        inset 0 4px 8px rgba(0,0,0,0.3);
+      animation: core-breathe 3.6s ease-in-out infinite;
+      position: relative;
+      z-index: 10;
+    }
+
+    .orb-core::after {
+      content: '';
+      position: absolute;
+      inset: 6px;
+      border-radius: 9999px;
+      background: radial-gradient(circle at 32% 28%, rgba(255,255,255,0.85), transparent 60%);
+      opacity: 0.6;
+    }
+
+    .orb-glow {
+      position: absolute;
+      width: 178px;
+      height: 178px;
+      border-radius: 9999px;
+      background: radial-gradient(circle, rgba(0,240,255,0.16) 0%, transparent 68%);
+      filter: blur(18px);
+      z-index: 1;
+      animation: core-glow-pulse 4.1s ease-in-out infinite;
+    }
+
+    @keyframes orb-rotate {
+      to { transform: rotate(360deg); }
+    }
+
+    @keyframes core-breathe {
+      0%, 100% { transform: scale(1); box-shadow: 0 0 9px rgba(0,240,255,0.9), 0 0 22px rgba(0,240,255,0.65), 0 0 44px rgba(0,240,255,0.38), inset 0 0 12px rgba(255,255,255,0.75), inset 0 4px 8px rgba(0,0,0,0.3); }
+      50% { transform: scale(1.035); box-shadow: 0 0 14px rgba(0,240,255,1), 0 0 30px rgba(0,240,255,0.75), 0 0 58px rgba(0,240,255,0.42), inset 0 0 14px rgba(255,255,255,0.85), inset 0 4px 8px rgba(0,0,0,0.3); }
+    }
+
+    @keyframes core-glow-pulse {
+      0%, 100% { opacity: 0.55; transform: scale(1); }
+      50% { opacity: 0.82; transform: scale(1.08); }
+    }
+
+    /* === ALIEN CODE LOG === */
+    .log-window {
+      background: #07070c;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 10px;
+      font-size: 10px;
+      line-height: 1.32;
+      box-shadow: inset 0 1px 0 rgba(0,0,0,0.6);
+    }
+
+    .log-line {
+      display: flex;
+      gap: 7px;
+      padding: 1px 0;
+      color: #6b7280;
+      font-family: 'JetBrains Mono', monospace;
+      white-space: nowrap;
+      transition: opacity 220ms ease;
+    }
+
+    .log-line.new {
+      animation: log-pop 220ms ease forwards;
+    }
+
+    .log-line .ts { color: #374151; font-size: 9.2px; }
+    .log-line .content { color: #9ca3af; }
+
+    @keyframes log-pop {
+      from { opacity: 0; transform: translateY(3px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* === BOOT SEQUENCE BUTTON — HEAVY INDUSTRIAL NEON === */
+    .boot-button {
+      font-family: 'Space Grotesk', system_ui, sans-serif;
+      letter-spacing: 3.8px;
+      font-weight: 600;
+      font-size: 15px;
+      padding: 18px 64px;
+      border: 2px solid #00f0ff;
+      color: #00f0ff;
+      background: transparent;
+      border-radius: 4px;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.15s cubic-bezier(0.23, 1, 0.32, 1);
+      box-shadow:
+        0 0 0 1px rgba(0, 240, 255, 0.2),
+        0 0 9px rgba(0, 240, 255, 0.5),
+        0 0 22px rgba(0, 240, 255, 0.28),
+        0 0 42px rgba(0, 240, 255, 0.12);
+      text-transform: uppercase;
+    }
+
+    .boot-button::before {
+      content: '';
+      position: absolute;
+      inset: -2px;
+      background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(0,240,255,0.35) 42%,
+        rgba(192,38,255,0.28) 58%,
+        transparent
+      );
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+
+    .boot-button:hover {
+      color: white;
+      border-color: #67f3ff;
+      box-shadow:
+        0 0 0 1px rgba(0, 240, 255, 0.4),
+        0 0 14px rgba(0, 240, 255, 0.75),
+        0 0 34px rgba(0, 240, 255, 0.42),
+        0 0 60px rgba(0, 240, 255, 0.2);
+      transform: translateY(-1px);
+    }
+
+    .boot-button:hover::before { opacity: 0.65; }
+
+    .boot-button:active {
+      transform: scale(0.985);
+      box-shadow:
+        0 0 0 1px rgba(0, 240, 255, 0.3),
+        0 0 8px rgba(0, 240, 255, 0.85),
+        0 0 18px rgba(0, 240, 255, 0.5);
+    }
+
+    /* Mobile-friendly larger tap target */
+    @media (max-width: 640px) {
+      .boot-button {
+        padding: 20px 52px;
+        font-size: 14.5px;
+        letter-spacing: 3.2px;
+        width: 100%;
+        max-width: 310px;
+      }
+    }
+
+    /* === RED ALERT MODAL === */
+    .denied-modal {
+      background: rgba(5, 5, 5, 0.92);
+      border: 2px solid #ff2a2a;
+      border-radius: 14px;
+      box-shadow:
+        0 0 0 1px rgba(255, 42, 42, 0.25),
+        0 0 18px rgba(255, 42, 42, 0.45),
+        0 0 52px rgba(255, 42, 42, 0.28),
+        0 25px 80px -10px rgba(0, 0, 0, 0.9);
+      animation: modal-enter 160ms cubic-bezier(0.23, 1.0, 0.32, 1) forwards;
+    }
+
+    @keyframes modal-enter {
+      from { opacity: 0; transform: scale(0.94) translateY(6px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    .modal-red-flash {
+      animation: red-flash 620ms ease forwards;
+    }
+
+    @keyframes red-flash {
+      0% { background-color: rgba(255, 42, 42, 0.0); }
+      12% { background-color: rgba(255, 42, 42, 0.13); }
+      100% { background-color: rgba(5, 5, 5, 0.92); }
+    }
+
+    .denied-title {
+      font-size: 2.35rem;
+      line-height: 1;
+      letter-spacing: 4.5px;
+      font-weight: 700;
+      color: #ff2a2a;
+      text-shadow:
+        0 0 7px rgba(255, 42, 42, 0.85),
+        0 0 18px rgba(255, 42, 42, 0.6),
+        0 0 36px rgba(255, 42, 42, 0.35);
+    }
+
+    .modal-btn {
+      flex: 1;
+      padding: 11px 16px;
+      font-size: 11.5px;
+      letter-spacing: 1.6px;
+      font-weight: 600;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.03);
+      color: #d1d5db;
+      border-radius: 5px;
+      transition: all 0.1s ease;
+      text-transform: uppercase;
+    }
+
+    .modal-btn:hover {
+      background: rgba(255, 42, 42, 0.09);
+      border-color: rgba(255, 42, 42, 0.35);
+      color: #fff;
+    }
+
+    .modal-btn:active {
+      transform: scale(0.975);
+    }
+
+    /* === HUD BAR === */
+    .hud-bar {
+      background: rgba(10, 10, 18, 0.92);
+      border-bottom: 1px solid rgba(0, 240, 255, 0.08);
+      backdrop-filter: blur(12px);
+      z-index: 50;
+    }
+
+    .status-pill {
+      font-size: 9.5px;
+      letter-spacing: 1.35px;
+      padding: 3px 10px 3px 7px;
+      border: 1px solid rgba(34, 255, 136, 0.25);
+      background: rgba(10, 10, 18, 0.6);
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .pulse-dot {
+      width: 5.5px;
+      height: 5.5px;
+      background: #22ff88;
+      border-radius: 9999px;
+      box-shadow: 0 0 0 2.5px rgba(34, 255, 136, 0.3);
+      animation: pulse-soft 2.1s ease-in-out infinite;
+    }
+
+    @keyframes pulse-soft {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    /* === STAGGERED POWER UP === */
+    .power-up {
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity 420ms cubic-bezier(0.23,1,0.32,1), transform 420ms cubic-bezier(0.23,1,0.32,1);
+    }
+    .power-up.is-live {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* === RESPONSIVE TWEAKS === */
+    @media (max-width: 640px) {
+      .core-orb { width: 118px; height: 118px; }
+      .orb-ring-1 { width: 118px; height: 118px; }
+      .orb-ring-2 { width: 92px; height: 92px; }
+      .orb-ring-3 { width: 64px; height: 64px; }
+      .orb-core { width: 42px; height: 42px; }
+      .orb-glow { width: 138px; height: 138px; }
+
+      .console-inner { padding: 22px 18px 20px; }
+      .denied-title { font-size: 1.95rem; letter-spacing: 3.5px; }
+    }
+
+    @media (max-width: 380px) {
+      .core-orb { width: 104px; height: 104px; }
+      .orb-ring-1 { width: 104px; height: 104px; }
+      .orb-ring-2 { width: 82px; height: 82px; }
+      .orb-ring-3 { width: 56px; height: 56px; }
+      .orb-core { width: 38px; height: 38px; }
+    }
+
+    /* Reduced motion respect */
+    @media (prefers-reduced-motion: reduce) {
+      .orb-ring-1, .orb-ring-2, .orb-ring-3,
+      .orb-core, .orb-glow,
+      .scanlines,
+      .boot-button::before,
+      .pulse-dot {
+        animation: none !important;
+        transition: none !important;
+      }
+      .power-up {
+        transition: none !important;
+        opacity: 1 !important;
+        transform: none !important;
+      }
+    }
+  </style>
+</head>
+<body class="min-h-screen text-[#e5e7eb] relative">
+  <!-- BACKGROUND LAYERS -->
+  <div class="bg-grid"></div>
+  <div class="scanlines"></div>
+  <div class="vignette"></div>
+
+  <!-- TOP HUD BAR -->
+  <header class="hud-bar sticky top-0 z-50">
+    <div class="max-w-[1080px] mx-auto px-5 sm:px-7 py-3.5">
+      <div class="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+        <!-- System Identity -->
+        <div class="flex items-center gap-3">
+          <div class="flex items-center gap-2.5">
+            <div class="w-2 h-2 rounded-full bg-[#22ff88] shadow-[0_0_6px_#22ff88]"></div>
+            <div>
+              <div class="font-semibold tracking-[2.8px] text-sm text-white">LOEWFIZZLE MAINFRAME</div>
+              <div class="text-[9px] text-[#64748b] -mt-0.5 tracking-[1.5px]">NEURAL-OS v4.2.7 • CLASSIFIED</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Live Clock -->
+        <div class="font-mono text-[#00f0ff] text-xl sm:text-[22px] tracking-[2.5px] tabular-nums" id="clock">
+          00:00:00
+        </div>
+
+        <!-- Status Indicators -->
+        <div class="flex items-center gap-2 text-xs">
+          <div class="status-pill">
+            <div class="pulse-dot"></div>
+            <span class="text-[#22ff88] font-medium tracking-[1px]">QUANTUM LINK SECURE</span>
+          </div>
+          <div class="hidden md:flex items-center px-2.5 py-0.5 text-[#64748b] text-[10px] tracking-widest border border-white/10 rounded">SYS NOMINAL</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTENT -->
+  <main class="relative z-10 max-w-[1080px] mx-auto px-4 sm:px-6 pt-9 pb-10">
+    <!-- CONSOLE FRAME -->
+    <div class="console-frame mx-auto max-w-[960px]">
+      <div class="console-inner px-6 py-7 sm:px-9 sm:py-9">
+
+        <!-- HEADER / TITLE -->
+        <div class="text-center mb-7 power-up" id="title-block">
+          <div class="flex items-center justify-center gap-2 mb-1">
+            <div class="h-px w-6 bg-gradient-to-r from-transparent via-[#c026ff] to-transparent"></div>
+            <span class="uppercase text-[10px] tracking-[3.5px] text-[#c026ff]/90 font-medium">PROJECT // HORIZON</span>
+            <div class="h-px w-6 bg-gradient-to-l from-transparent via-[#c026ff] to-transparent"></div>
+          </div>
+
+          <h1 class="text-[39px] sm:text-[46px] md:text-[52px] leading-none font-semibold tracking-[1.6px] futuristic text-white">
+            LOEWFIZZLE<br class="hidden sm:block">PROTOCOLS
+          </h1>
+          <p class="mt-1.5 text-sm text-[#64748b] tracking-[1.8px]">SYSTEMS COMPILING • STANDBY FOR ACTIVATION</p>
+        </div>
+
+        <!-- ANIMATED CORE ORB -->
+        <div class="flex justify-center mb-8 power-up" id="orb-block">
+          <div class="core-orb">
+            <!-- Outer glow -->
+            <div class="orb-glow"></div>
+
+            <!-- Rotating rings -->
+            <div class="orb-ring orb-ring-1"></div>
+            <div class="orb-ring orb-ring-2"></div>
+            <div class="orb-ring orb-ring-3"></div>
+
+            <!-- Central pulsating core -->
+            <div class="orb-core"></div>
+
+            <!-- Subtle inner data ring -->
+            <div class="absolute inset-0 flex items-center justify-center" style="width:152px;height:152px">
+              <div class="w-[66px] h-[66px] rounded-full border border-white/10" style="animation: orb-rotate 7.2s linear infinite reverse;"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- STATUS INDICATOR CARDS -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3 mb-7 power-up" id="indicators-block">
+          <!-- NEURAL CORE -->
+          <div class="status-card">
+            <div class="flex items-center justify-between mb-1.5 px-0.5">
+              <div class="status-label">NEURAL CORE</div>
+              <div class="status-value font-medium text-[#22ff88]" id="val-neural">94.2</div>
+            </div>
+            <svg id="gauge-neural" class="gauge-svg" viewBox="0 0 120 42" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M8 34 Q 60 6 112 34" stroke="#1f2937" stroke-width="5" stroke-linecap="round"/>
+              <path id="progress-neural" d="M8 34 Q 60 6 112 34" stroke="#22ff88" stroke-width="5" stroke-linecap="round"
+                    stroke-dasharray="122" stroke-dashoffset="7"/>
+            </svg>
+            <div class="text-[9px] text-[#64748b] mt-0.5 text-right pr-0.5">STABLE</div>
+          </div>
+
+          <!-- QUANTUM SYNC -->
+          <div class="status-card">
+            <div class="flex items-center justify-between mb-1.5 px-0.5">
+              <div class="status-label">QUANTUM SYNC</div>
+              <div class="status-value font-medium text-[#00f0ff]" id="val-quantum">87.9</div>
+            </div>
+            <svg id="gauge-quantum" class="gauge-svg" viewBox="0 0 120 42" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M8 34 Q 60 6 112 34" stroke="#1f2937" stroke-width="5" stroke-linecap="round"/>
+              <path id="progress-quantum" d="M8 34 Q 60 6 112 34" stroke="#00f0ff" stroke-width="5" stroke-linecap="round"
+                    stroke-dasharray="122" stroke-dashoffset="15"/>
+            </svg>
+            <div class="text-[9px] text-[#64748b] mt-0.5 text-right pr-0.5">PHASE LOCKED</div>
+          </div>
+
+          <!-- BIO-LINK -->
+          <div class="status-card">
+            <div class="flex items-center justify-between mb-1.5 px-0.5">
+              <div class="status-label">BIO-LINK</div>
+              <div class="status-value font-medium text-[#c026ff]" id="val-bio">71.6</div>
+            </div>
+            <svg id="gauge-bio" class="gauge-svg" viewBox="0 0 120 42" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M8 34 Q 60 6 112 34" stroke="#1f2937" stroke-width="5" stroke-linecap="round"/>
+              <path id="progress-bio" d="M8 34 Q 60 6 112 34" stroke="#c026ff" stroke-width="5" stroke-linecap="round"
+                    stroke-dasharray="122" stroke-dashoffset="34"/>
+            </svg>
+            <div class="text-[9px] text-[#64748b] mt-0.5 text-right pr-0.5">NOMINAL</div>
+          </div>
+
+          <!-- SYSTEM LOAD -->
+          <div class="status-card">
+            <div class="flex items-center justify-between mb-1.5 px-0.5">
+              <div class="status-label">SYSTEM LOAD</div>
+              <div class="status-value font-medium text-[#f59e0b]" id="val-load">38.4</div>
+            </div>
+            <svg id="gauge-load" class="gauge-svg" viewBox="0 0 120 42" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M8 34 Q 60 6 112 34" stroke="#1f2937" stroke-width="5" stroke-linecap="round"/>
+              <path id="progress-load" d="M8 34 Q 60 6 112 34" stroke="#f59e0b" stroke-width="5" stroke-linecap="round"
+                    stroke-dasharray="122" stroke-dashoffset="75"/>
+            </svg>
+            <div class="text-[9px] text-[#64748b] mt-0.5 text-right pr-0.5">UNDER THRESHOLD</div>
+          </div>
+        </div>
+
+        <!-- TEASER TEXT -->
+        <div class="text-center mb-5 power-up" id="teaser-block">
+          <p class="text-[#64748b] text-[13.5px] tracking-[0.6px]">Something powerful is compiling in the dark.</p>
+        </div>
+
+        <!-- ALIEN CODE LOG -->
+        <div class="power-up" id="log-block">
+          <div class="flex items-center justify-between px-1 mb-1.5">
+            <div class="uppercase text-[9.5px] tracking-[2px] text-[#64748b]">SUBSPACE FEED</div>
+            <div class="text-[9px] text-[#374151]">LIVE</div>
+          </div>
+          <div class="log-window px-3 py-[7px] h-[78px] sm:h-[82px] overflow-hidden" id="log-window">
+            <div id="log-content" class="space-y-px"></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- BOOT SEQUENCE BUTTON -->
+    <div class="mt-8 flex justify-center power-up" id="button-block">
+      <button id="boot-button"
+              class="boot-button group select-none active:scale-[0.982] focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-[#050505] focus-visible:ring-[#00f0ff]/70">
+        BOOT SEQUENCE
+      </button>
+    </div>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="relative z-10 max-w-[1080px] mx-auto px-5 pb-8 text-center">
+    <div class="text-[10px] text-[#475569] tracking-[1.8px]">
+      LOEWFIZZLE SYSTEMS • SECURE NODE 01 • v2077.3.14 • ALL RIGHTS RESONATE
+    </div>
+  </footer>
+
+  <!-- ACCESS DENIED MODAL -->
+  <div id="denied-modal" class="hidden fixed inset-0 z-[200] flex items-center justify-center bg-black/85 p-4 sm:p-6">
+    <div class="denied-modal w-full max-w-[390px] sm:max-w-md p-6 sm:p-7 text-center modal-red-flash" id="modal-panel">
+      <!-- Warning glyph -->
+      <div class="mx-auto mb-2 w-11 h-11 flex items-center justify-center">
+        <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#ff2a2a" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 3L2 21h20L12 3z"></path>
+          <path d="M12 9v5"></path>
+          <circle cx="12" cy="18" r="1"></circle>
+        </svg>
+      </div>
+
+      <div class="denied-title mb-1">ACCESS DENIED</div>
+
+      <div class="mono text-[10.5px] text-[#ff2a2a]/90 tracking-[1.8px] mb-4">AUTHORIZATION FAILURE • 0xE4A2</div>
+
+      <div class="space-y-[5px] text-sm text-[#9ca3af] mb-6 font-light">
+        <div class="font-mono text-xs text-[#64748b]">BIOMETRIC MISMATCH DETECTED</div>
+        <div>CLEARANCE LEVEL: <span class="text-[#ff2a2a]">OMEGA-7 REQUIRED</span></div>
+        <div id="modal-timestamp" class="font-mono text-xs text-[#64748b]"></div>
+        <div>NODE: CORE-09 • SECTOR DELTA-7</div>
+      </div>
+
+      <div class="flex flex-col sm:flex-row gap-2">
+        <button onclick="closeDeniedModal()" class="modal-btn">ABORT</button>
+        <button onclick="closeDeniedModal()" class="modal-btn">REQUEST OVERRIDE</button>
+        <button onclick="closeDeniedModal()" class="modal-btn">DISENGAGE</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // =============================================
+    // TAILWIND CONFIG + UTILITIES
+    // =============================================
+    function initTailwind() {
+      document.documentElement.style.setProperty('--accent-cyan', '#00f0ff');
+    }
+
+    // =============================================
+    // LIVE CLOCK (precise, updates every second)
+    // =============================================
+    function startLiveClock() {
+      const clockEl = document.getElementById('clock');
+
+      function update() {
+        const now = new Date();
+        const h = String(now.getHours()).padStart(2, '0');
+        const m = String(now.getMinutes()).padStart(2, '0');
+        const s = String(now.getSeconds()).padStart(2, '0');
+        clockEl.textContent = `${h}:${m}:${s}`;
+      }
+
+      update();
+      setInterval(update, 1000);
+    }
+
+    // =============================================
+    // STATUS GAUGES — SVG ARC + LIVE DRIFT
+    // =============================================
+    const gauges = {
+      neural: { id: 'progress-neural', valId: 'val-neural', value: 94.2, min: 91, max: 97.5, color: '#22ff88' },
+      quantum: { id: 'progress-quantum', valId: 'val-quantum', value: 87.9, min: 84, max: 93, color: '#00f0ff' },
+      bio: { id: 'progress-bio', valId: 'val-bio', value: 71.6, min: 68, max: 77, color: '#c026ff' },
+      load: { id: 'progress-load', valId: 'val-load', value: 38.4, min: 29, max: 49, color: '#f59e0b' }
+    };
+
+    // Arc length will be measured once the SVGs are in the DOM (fallback approx)
+    let gaugeArcLength = 122;
+
+    function measureGaugeArc() {
+      // Measure the first gauge path for accurate length
+      const sample = document.getElementById('progress-neural');
+      if (sample && sample.getTotalLength) {
+        gaugeArcLength = sample.getTotalLength() || 122;
+      }
+
+      // Immediately apply the accurate length to all progress paths (prevents visual jump)
+      ['progress-neural', 'progress-quantum', 'progress-bio', 'progress-load'].forEach(id => {
+        const p = document.getElementById(id);
+        if (p) p.setAttribute('stroke-dasharray', gaugeArcLength.toFixed(1));
+      });
+    }
+
+    function updateGauge(gaugeKey, percent) {
+      const g = gauges[gaugeKey];
+      if (!g) return;
+
+      const path = document.getElementById(g.id);
+      if (!path) return;
+
+      const offset = gaugeArcLength * (1 - percent / 100);
+      path.setAttribute('stroke-dasharray', gaugeArcLength.toFixed(1));
+      path.setAttribute('stroke-dashoffset', offset.toFixed(1));
+
+      // update numeric label
+      const valEl = document.getElementById(g.valId);
+      if (valEl) {
+        valEl.textContent = percent.toFixed(1);
+      }
+    }
+
+    function initGauges() {
+      // Measure real arc length from the rendered SVG (more accurate than hardcoded)
+      // Run after a frame so the elements exist
+      requestAnimationFrame(() => {
+        measureGaugeArc();
+
+        // Set initial values now that arc length is known
+        Object.keys(gauges).forEach(key => {
+          const g = gauges[key];
+          updateGauge(key, g.value);
+        });
+      });
+
+      // Gentle independent drifting updates
+      setInterval(() => {
+        Object.keys(gauges).forEach(key => {
+          const g = gauges[key];
+          // Small random walk
+          const drift = (Math.random() - 0.5) * (key === 'load' ? 2.8 : 1.35);
+          let next = g.value + drift;
+
+          // clamp
+          if (next < g.min) next = g.min;
+          if (next > g.max) next = g.max;
+
+          g.value = next;
+          updateGauge(key, next);
+        });
+      }, 2150);
+    }
+
+    // =============================================
+    // ALIEN CODE / SUBSPACE LOG
+    // =============================================
+    const LOG_LINES = [
+      "0x7F2A :: NEURAL WEAVE STABILIZED",
+      "ENTROPY POOL 0.00047% • REPLENISHED",
+      "NODE-09 HANDSHAKE COMPLETE",
+      "[SUBSPACE] RECURSION VECTOR 0xAA",
+      "BIO-SIGNATURE 99.87% MATCH",
+      "0xC1D4 :: SHADOW LINK ESTABLISHED",
+      "QUANTUM LATTICE PHASE 4 NOMINAL",
+      "PHANTOM ARRAY CALIBRATION OK",
+      "0xFF91 • GHOST PROTOCOL ENGAGED",
+      "ENTANGLEMENT DEPTH: 14.7k THREADS",
+      "CORE-17 ACKNOWLEDGED • STANDBY",
+      "0x3E8A :: TEMPORAL BUFFER FLUSHED",
+      "RESONANCE FIELD 99.2% • STABLE"
+    ];
+
+    let logQueue = [];
+
+    function createLogLine(text) {
+      const now = new Date();
+      const ts = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
+
+      const line = document.createElement('div');
+      line.className = 'log-line new';
+      line.innerHTML = `
+        <span class="ts">[${ts}]</span>
+        <span class="content">${text}</span>
+      `;
+      return line;
+    }
+
+    function renderLog() {
+      const container = document.getElementById('log-content');
+      container.innerHTML = '';
+
+      const visible = logQueue.slice(-7);
+      visible.forEach((text, i) => {
+        const el = createLogLine(text);
+        if (i < visible.length - 3) el.style.opacity = '0.55';
+        container.appendChild(el);
+      });
+    }
+
+    function addLogLine() {
+      const container = document.getElementById('log-content');
+
+      // Pick a fresh line
+      let text = LOG_LINES[Math.floor(Math.random() * LOG_LINES.length)];
+      // Avoid immediate repeats
+      if (logQueue.length > 0 && text === logQueue[logQueue.length - 1]) {
+        text = LOG_LINES[(LOG_LINES.indexOf(text) + 3) % LOG_LINES.length];
+      }
+
+      logQueue.push(text);
+      if (logQueue.length > 12) logQueue.shift();
+
+      // Render fresh
+      renderLog();
+
+      // Gentle scroll hint (if container ever scrolls)
+      container.scrollTop = container.scrollHeight;
+    }
+
+    function initAlienLog() {
+      // Seed with 5 initial lines
+      logQueue = [...LOG_LINES].sort(() => Math.random() - 0.5).slice(0, 5);
+      renderLog();
+
+      // Add new lines at irregular but calm intervals
+      setInterval(() => {
+        addLogLine();
+      }, 1650 + Math.random() * 980);
+    }
+
+    // =============================================
+    // WEB AUDIO — PREMIUM SCI-FI ALARM
+    // =============================================
+    let audioCtx;
+
+    function ensureAudioContext() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume().catch(() => {});
+      }
+      return audioCtx;
+    }
+
+    function playBootAlarm() {
+      const ctx = ensureAudioContext();
+      const now = ctx.currentTime;
+
+      // === LAYER 1: Deep urgent pulse (rising) ===
+      const osc1 = ctx.createOscillator();
+      osc1.type = 'sine';
+      osc1.frequency.value = 58;
+
+      const filter1 = ctx.createBiquadFilter();
+      filter1.type = 'lowpass';
+      filter1.frequency.value = 320;
+
+      const gain1 = ctx.createGain();
+      gain1.gain.value = 0.0001;
+
+      const masterGain = ctx.createGain();
+      masterGain.gain.value = 0.82;
+
+      // Envelope — punchy rise + decay
+      gain1.gain.setValueAtTime(0.0001, now);
+      gain1.gain.linearRampToValueAtTime(0.68, now + 0.08);
+      gain1.gain.linearRampToValueAtTime(0.21, now + 0.42);
+      gain1.gain.linearRampToValueAtTime(0.0001, now + 1.35);
+
+      osc1.connect(filter1);
+      filter1.connect(gain1);
+
+      // === LAYER 2: Mid warning tone (slightly detuned saw) ===
+      const osc2 = ctx.createOscillator();
+      osc2.type = 'sawtooth';
+      osc2.frequency.value = 198;
+
+      const osc2b = ctx.createOscillator();
+      osc2b.type = 'sawtooth';
+      osc2b.frequency.value = 205;
+
+      const filter2 = ctx.createBiquadFilter();
+      filter2.type = 'bandpass';
+      filter2.frequency.value = 680;
+      filter2.Q.value = 4.8;
+
+      const gain2 = ctx.createGain();
+      gain2.gain.value = 0.0001;
+
+      gain2.gain.setValueAtTime(0.0001, now + 0.05);
+      gain2.gain.linearRampToValueAtTime(0.31, now + 0.18);
+      gain2.gain.linearRampToValueAtTime(0.0001, now + 1.05);
+
+      osc2.connect(filter2);
+      osc2b.connect(filter2);
+      filter2.connect(gain2);
+      gain2.connect(masterGain);
+
+      // === LAYER 3: High priority alert beeps ===
+      function scheduleBeep(start, freq, dur, vol) {
+        const o = ctx.createOscillator();
+        o.type = 'square';
+        o.frequency.value = freq;
+
+        const f = ctx.createBiquadFilter();
+        f.type = 'highpass';
+        f.frequency.value = 820;
+
+        const g = ctx.createGain();
+        g.gain.value = 0.0001;
+
+        g.gain.setValueAtTime(0.0001, start);
+        g.gain.linearRampToValueAtTime(vol, start + 0.008);
+        g.gain.linearRampToValueAtTime(0.0001, start + dur);
+
+        o.connect(f);
+        f.connect(g);
+        g.connect(masterGain);
+
+        o.start(start);
+        o.stop(start + dur + 0.03);
+      }
+
+      scheduleBeep(now + 0.31, 1180, 0.065, 0.29);
+      scheduleBeep(now + 0.41, 1540, 0.072, 0.24);
+      scheduleBeep(now + 0.92, 1320, 0.055, 0.21);
+
+      // === LAYER 4: Short metallic impact noise ===
+      const noise = ctx.createBufferSource();
+      const buffer = ctx.createBuffer(1, ctx.sampleRate * 0.9, ctx.sampleRate);
+      const data = buffer.getChannelData(0);
+      for (let i = 0; i < data.length; i++) {
+        data[i] = Math.random() * 2 - 1;
+      }
+      noise.buffer = buffer;
+
+      const noiseFilter = ctx.createBiquadFilter();
+      noiseFilter.type = 'bandpass';
+      noiseFilter.frequency.value = 1450;
+      noiseFilter.Q.value = 3.2;
+
+      const noiseGain = ctx.createGain();
+      noiseGain.gain.value = 0.0001;
+
+      noiseGain.gain.setValueAtTime(0.0001, now);
+      noiseGain.gain.linearRampToValueAtTime(0.38, now + 0.015);
+      noiseGain.gain.linearRampToValueAtTime(0.0001, now + 0.48);
+
+      noise.connect(noiseFilter);
+      noiseFilter.connect(noiseGain);
+      noiseGain.connect(masterGain);
+
+      // Final routing
+      const comp = ctx.createDynamicsCompressor();
+      masterGain.connect(comp);
+      comp.connect(ctx.destination);
+
+      gain1.connect(masterGain);
+
+      // Start everything
+      osc1.start(now);
+      osc2.start(now + 0.03);
+      osc2b.start(now + 0.03);
+      noise.start(now);
+
+      // Cleanup
+      osc1.stop(now + 1.45);
+      osc2.stop(now + 1.25);
+      osc2b.stop(now + 1.25);
+
+      // Slight master duck at end
+      masterGain.gain.linearRampToValueAtTime(0.0001, now + 1.55);
+    }
+
+    // =============================================
+    // ACCESS DENIED MODAL
+    // =============================================
+    function openDeniedModal() {
+      const modal = document.getElementById('denied-modal');
+      const panel = document.getElementById('modal-panel');
+      const ts = document.getElementById('modal-timestamp');
+
+      // Live timestamp inside modal
+      const now = new Date();
+      ts.textContent = `TIMESTAMP: ${now.toISOString().slice(0,19).replace('T',' ')} UTC`;
+
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+
+      // Add a quick red flash on the whole overlay
+      modal.style.background = 'rgba(0,0,0,0.78)';
+      setTimeout(() => {
+        if (!modal.classList.contains('hidden')) {
+          modal.style.transition = 'background 420ms ease';
+          modal.style.background = 'rgba(5,5,5,0.85)';
+        }
+      }, 180);
+
+      // Keyboard escape support
+      document.addEventListener('keydown', handleModalEsc, { once: true });
+    }
+
+    function closeDeniedModal() {
+      const modal = document.getElementById('denied-modal');
+      modal.style.transition = 'opacity 110ms ease';
+      modal.style.opacity = '0';
+
+      setTimeout(() => {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+        modal.style.opacity = '1';
+        modal.style.transition = '';
+        modal.style.background = 'rgba(5, 5, 5, 0.92)';
+
+        // Re-enable boot button
+        const btn = document.getElementById('boot-button');
+        if (btn) btn.disabled = false;
+      }, 110);
+    }
+
+    function handleModalEsc(e) {
+      if (e.key === 'Escape') {
+        closeDeniedModal();
+      }
+    }
+
+    // =============================================
+    // BOOT SEQUENCE INTERACTION
+    // =============================================
+    function initBootButton() {
+      const btn = document.getElementById('boot-button');
+
+      btn.addEventListener('click', () => {
+        // Prevent double triggers
+        btn.disabled = true;
+
+        // 1. Play the premium alarm immediately
+        playBootAlarm();
+
+        // 2. Open dramatic modal shortly after (gives the sound time to breathe)
+        setTimeout(() => {
+          openDeniedModal();
+        }, 360);
+      });
+
+      // Also allow Enter/Space when focused
+      btn.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          btn.click();
+        }
+      });
+    }
+
+    // =============================================
+    // STAGGERED POWER-UP ANIMATIONS
+    // =============================================
+    function runPowerUpSequence() {
+      const blocks = [
+        document.getElementById('title-block'),
+        document.getElementById('orb-block'),
+        document.getElementById('indicators-block'),
+        document.getElementById('teaser-block'),
+        document.getElementById('log-block'),
+        document.getElementById('button-block')
+      ];
+
+      blocks.forEach((el, index) => {
+        if (!el) return;
+        el.classList.add('power-up');
+
+        setTimeout(() => {
+          el.classList.add('is-live');
+        }, 90 + index * 78);
+      });
+    }
+
+    // =============================================
+    // GLOBAL KEYBOARD SHORTCUTS (nice polish)
+    // =============================================
+    function initKeyboardShortcuts() {
+      document.addEventListener('keydown', (e) => {
+        if (e.key.toLowerCase() === 'b' && document.activeElement.tagName === 'BODY') {
+          const btn = document.getElementById('boot-button');
+          if (btn && !btn.disabled) btn.click();
+        }
+        if (e.key === '?') {
+          const modal = document.getElementById('denied-modal');
+          if (!modal.classList.contains('hidden')) {
+            closeDeniedModal();
+          }
+        }
+      });
+
+      // Easter egg hint in console
+      console.log('%c[LOEWFIZZLE] Press "B" to trigger BOOT SEQUENCE (when focused on page)', 'color:#334155;font-size:9px');
+    }
+
+    // =============================================
+    // REDUCED MOTION + MOBILE ENHANCEMENTS
+    // =============================================
+    function applyMotionPreferences() {
+      const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      if (prefersReduced) {
+        // Already handled in CSS. Extra safety:
+        document.querySelectorAll('.orb-ring-1, .orb-ring-2, .orb-ring-3').forEach(el => {
+          el.style.animation = 'none';
+        });
+      }
+    }
+
+    function enhanceMobileExperience() {
+      // Ensure the boot button has excellent touch target
+      const btn = document.getElementById('boot-button');
+      if (btn) {
+        btn.style.minHeight = '56px'; // comfortable tap size
+      }
+
+      // Prevent iOS double-tap zoom on button area (already prevented by CSS)
+      // Add subtle active visual feedback for touch devices
+      if ('ontouchstart' in window) {
+        btn?.addEventListener('touchstart', () => {
+          btn.style.transform = 'scale(0.982)';
+        }, { passive: true });
+
+        btn?.addEventListener('touchend', () => {
+          setTimeout(() => {
+            if (btn) btn.style.transform = '';
+          }, 80);
+        }, { passive: true });
+      }
+    }
+
+    // =============================================
+    // INITIALIZATION
+    // =============================================
+    function init() {
+      initTailwind();
+      startLiveClock();
+      initGauges();
+      initAlienLog();
+      initBootButton();
+      runPowerUpSequence();
+      initKeyboardShortcuts();
+      applyMotionPreferences();
+      enhanceMobileExperience();
+
+      // Gentle first log addition to feel alive immediately
+      setTimeout(() => {
+        const container = document.getElementById('log-content');
+        if (container && container.children.length > 0) {
+          // Already seeded — add one more quickly
+          const extra = document.createElement('div');
+          extra.className = 'log-line';
+          extra.style.opacity = '0.4';
+          extra.innerHTML = `<span class="ts">[${new Date().toTimeString().slice(0,8)}]</span><span class="content">0x00FF :: MAINFRAME ONLINE</span>`;
+          container.appendChild(extra);
+          setTimeout(() => extra.remove(), 620);
+        }
+      }, 1350);
+
+      // Mark as ready
+      console.log('%c[LOEWFIZZLE] Mainframe console initialized — fully self-contained.', 'color:#475569;font-size:9.5px');
+    }
+
+    // Boot the page
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      init();
+    }
+  </script>
+</body>
+</html>
